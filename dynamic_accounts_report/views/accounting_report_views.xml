@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--    Client actions for the button click-->
+    <record id="action_general_ledger" model="ir.actions.client">
+        <field name="name">Libro Mayor</field>
+        <field name="tag">gen_l</field>
+    </record>
+    <record id="action_trial_balance" model="ir.actions.client">
+        <field name="name">Balance de Comprobación</field>
+        <field name="tag">trl_b</field>
+    </record>
+    <record id="action_partner_ledger" model="ir.actions.client">
+        <field name="name">Libro mayor de socio</field>
+        <field name="tag">p_l</field>
+    </record>
+    <record id="action_bank_book" model="ir.actions.client">
+        <field name="name">Libro de Bancos</field>
+        <field name="tag">bnk_b</field>
+    </record>
+    <record id="action_cash_book" model="ir.actions.client">
+        <field name="name">Libro de Pagos</field>
+        <field name="tag">csh_b</field>
+    </record>
+    <record id="action_dynamic_balance_sheet" model="ir.actions.client">
+        <field name="name">Hoja de Balances</field>
+        <field name="tag">bl_s</field>
+    </record>
+    <record id="action_dynamic_profit_and_loss" model="ir.actions.client">
+        <field name="name">Ganancia y Perdida</field>
+        <field name="tag">dfr_n</field>
+    </record>
+    <record id="action_aged_payable" model="ir.actions.client">
+        <field name="name">Pago por edad</field>
+        <field name="tag">age_p</field>
+    </record>
+    <record id="action_tax_report" model="ir.actions.client">
+        <field name="name">Informe de Impuestos</field>
+        <field name="tag">tax_r</field>
+    </record>
+    <record id="action_aged_receivable" model="ir.actions.client">
+        <field name="name">Cuenta por cobrar envejecida</field>
+        <field name="tag">age_r</field>
+    </record>
+    <!--    All menus are defined-->
+    <menuitem
+        id="dynamic_report_accounting"
+        sequence="19"
+        name="Informes Financieros Dinámico"
+        parent="account.menu_finance_reports"
+    />
+    <menuitem
+        id="menu_cash_book"
+        action="action_cash_book"
+        name="Libro de Pagos"
+        sequence="5"
+        parent="dynamic_report_accounting"
+    />
+    <menuitem
+        id="aged_receivable_menu"
+        action="action_aged_receivable"
+        name="Cuenta por cobrar envejecida"
+        sequence="4"
+        parent="dynamic_report_accounting"
+    />
+    <menuitem
+        id="menu_general_ledger"
+        action="action_general_ledger"
+        name="Libro Mayor"
+        parent="dynamic_report_accounting"
+    />
+    <menuitem
+        id="menu_trial_balance"
+        action="action_trial_balance"
+        name="Balance de Comprobación"
+        sequence="7"
+        parent="dynamic_report_accounting"
+    />
+    <menuitem
+        id="menu_partner_ledger"
+        action="action_partner_ledger"
+        name="Libro mayor de socio"
+        sequence="3"
+        parent="dynamic_report_accounting"
+    />
+    <menuitem
+        id="menu_bank_book"
+        action="action_bank_book"
+        name="Libro de Bancos"
+        sequence="6"
+        parent="dynamic_report_accounting"
+    />
+    <menuitem
+        id="menu_balance_sheet_report"
+        action="action_dynamic_balance_sheet"
+        name="Hoja de Balances"
+        sequence="2"
+        parent="dynamic_report_accounting"
+    />
+    <menuitem
+        id="menu_profit_and_loss_report"
+        action="action_dynamic_profit_and_loss"
+        name="Ganancias y Perdidas"
+        sequence="1"
+        parent="dynamic_report_accounting"
+    />
+    <menuitem
+        id="aged_payable_menu"
+        action="action_aged_payable"
+        name="Pago por edad"
+        sequence="9"
+        parent="dynamic_report_accounting"
+    />
+    <menuitem
+        id="tax_report_menu"
+        action="action_tax_report"
+        name="Informe de Impuestos"
+        sequence="10"
+        parent="dynamic_report_accounting"
+    />
+</odoo>
