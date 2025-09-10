@@ -10,6 +10,7 @@ const actionRegistry = registry.category("actions");
 
 class GeneralLedger extends owl.Component {
     setup() {
+        this.notification = useService("notification");
         super.setup(...arguments);
         this.initial_render = true;
         this.orm = useService("orm");
@@ -26,40 +27,74 @@ class GeneralLedger extends owl.Component {
             total_debit: null,
             total_credit: null,
             currency: null,
-            journals: null,
+            journals: [],
             selected_journal_list: [],
-            analytics: null,
+            analytics: [],
             selected_analytic_list: [],
+            accounts: [],
+            all_accounts:[],
+            filteredAccounts:[],
+            selected_account_list: [],
+            selected_account_rec: [],
+            date_range: null,
+            options: null,
+            method: { accrual: true }, 
+            search:'',
+            exportDisabled: false,
+            dateError: null,
             title: null,
             filter_applied: null,
             account_list: null,
             account_total_list: null,
-            accounts: [], // Nuevo estado para cuentas contables
-            selected_account_list: [], // Para almacenar cuentas seleccionadas
-            date_range: null,
-            options: null,             // Todas las cuentas
-            filteredAccounts: [],       // Cuentas filtradas
-            selected_account_rec: [],     // Cuenta seleccionada
-            all_accounts: [],
-            search: '',   
-            method: {
-                accural: true,
-            },
         });
         this.loadInitialOptions();
         //this.load_data((self.initial_render = true));
     }
-    async loadInitialOptions() {
+    validateDateRange() {
+        const dr = this.state.date_range;
+        // Si el date_range es un preset (string), no hay nada que validar
+        if (!dr || typeof dr === "string") {
+          this.state.dateError = null;
+          this.state.exportDisabled = false;
+          return true;
+        }
+        const { start_date, end_date } = dr || {};
+        if (!start_date || !end_date) {
+          // Si falta una de las dos, no bloqueamos, pero tampoco hay error
+          this.state.dateError = null;
+          this.state.exportDisabled = false;
+          return true;
+        }
+        const s = new Date(start_date);
+        const e = new Date(end_date);
+        if (isNaN(s.getTime()) || isNaN(e.getTime())) {
+          this.state.dateError = "Formato de fecha inválido.";
+          this.state.exportDisabled = true;
+          return false;
+        }
+        if (e < s) {
+          this.state.dateError = "La fecha final no puede ser menor que la inicial.";
+          this.state.exportDisabled = true;
+          return false;
+        }
+        this.state.dateError = null;
+        this.state.exportDisabled = false;
+        return true;
+      }
+      
+      async loadInitialOptions() {
+        // Solo para catálogos iniciales
         const data = await this.orm.call(
-            "account.general.ledger",
-            "view_report",
-            [null, null]
+          "account.general.ledger",
+          "view_report",
+          [null, null]
         );
-        this.state.journals = data.journal_ids;
-        this.state.analytics = data.analytic_ids;
-        this.state.all_accounts = data.account_ids || [];
-        this.state.filteredAccounts = [...this.state.all_accounts];
-    }
+      
+        this.state.journals  = data.journal_ids  || [];
+        this.state.analytics = data.analytic_ids || [];
+        this.state.accounts  = data.account_ids  || [];
+        this.state.filteredAccounts = Array.isArray(this.state.accounts) ? [...this.state.accounts] : [];
+      }      
 
     selectAccount(event) {
         const accountId = event.target.dataset.value;
@@ -121,12 +156,17 @@ class GeneralLedger extends owl.Component {
             [null, null]
         );
         this.state.all_accounts = data.account_ids || [];
-        this.state.accounts = data;
+        this.state.accounts = data.account_ids || [];
         this.state.filteredAccounts = [...this.state.all_accounts];
         this.render(true);
     }
     async printPdf(ev) {
         ev.preventDefault();
+        // No exportar si hay error de fechas
+        if (this.state.exportDisabled) {
+            this.notification?.add(this.state.dateError || "Rango de fechas inválido.", { type: "danger" });
+            return;
+        }
         var self = this;
         let totals = {
             total_debit: this.state.total_debit,
@@ -152,6 +192,11 @@ class GeneralLedger extends owl.Component {
         });
     }
     async print_xlsx() {
+        // No exportar si hay error de fechas
+        if (this.state.exportDisabled) {
+            this.notification?.add(this.state.dateError || "Rango de fechas inválido.", { type: "danger" });
+            return;
+        }
         var self = this;
         let totals = {
             total_debit: this.state.total_debit,
@@ -216,201 +261,156 @@ class GeneralLedger extends owl.Component {
     }
     async applyFilter(val, ev, is_delete = false) {
         debugger;
-        let account_list = [];
-        let account_totals = "";
-        let totalDebitSum = 0;
-        let totalCreditSum = 0;
+      
         this.state.account = null;
         this.state.account_data = null;
         this.state.account_total = null;
         this.state.filter_applied = true;
-            if (this.date_range_from.el.name === "start_date") {
-                this.state.date_range = {
-                    ...this.state.date_range,
-                    start_date: this.date_range_from.el.value,
-                };
-            }else if (this.date_range_to.el.name === "end_date") {
-                this.state.date_range = {
-                    ...this.state.date_range,
-                    end_date: this.date_range_to.el.value,
-                };
-            } else if (val.target.attributes["data-value"].value == "month") {
-                this.state.date_range = val.target.attributes["data-value"].value;
-            } else if (val.target.attributes["data-value"].value == "year") {
-                this.state.date_range = val.target.attributes["data-value"].value;
-            } else if (val.target.attributes["data-value"].value == "quarter") {
-                this.state.date_range = val.target.attributes["data-value"].value;
-            } else if (val.target.attributes["data-value"].value == "last-month") {
-                this.state.date_range = val.target.attributes["data-value"].value;
-            } else if (val.target.attributes["data-value"].value == "last-year") {
-                this.state.date_range = val.target.attributes["data-value"].value;
-            } else if (val.target.attributes["data-value"].value == "last-quarter") {
-                this.state.date_range = val.target.attributes["data-value"].value;
-            } else if (val.target.attributes["data-value"].value == "journal") {
-                if (!val.target.classList.contains("selected-filter")) {
-                    this.state.selected_journal_list.push(
-                        parseInt(val.target.attributes["data-id"].value, 10)
-                    );
-                    val.target.classList.add("selected-filter");
-                } else {
-                    const updatedList = this.state.selected_journal_list.filter(
-                        (item) =>
-                            item !==
-                            parseInt(val.target.attributes["data-id"].value, 10)
-                    );
-                    this.state.selected_journal_list = updatedList;
-                    val.target.classList.remove("selected-filter");
-                }
-            } else if (val.target.attributes["data-value"].value == "analytic") {
-                if (!val.target.classList.contains("selected-filter")) {
-                    this.state.selected_analytic_list.push(
-                        parseInt(val.target.attributes["data-id"].value, 10)
-                    );
-                    val.target.classList.add("selected-filter");
-                } else {
-                    const updatedList = this.state.selected_analytic_list.filter(
-                        (item) =>
-                            item !==
-                            parseInt(val.target.attributes["data-id"].value, 10)
-                    );
-                    this.state.selected_analytic_list = updatedList;
-                    val.target.classList.remove("selected-filter");
-                }
-            } else if (val.target.attributes["data-value"].value == "journal") {
-                if (!val.target.classList.contains("selected-filter")) {
-                    this.state.selected_journal_list.push(
-                        parseInt(val.target.attributes["data-id"].value, 10)
-                    );
-                    val.target.classList.add("selected-filter");
-                } else {
-                    const updatedList = this.state.selected_journal_list.filter(
-                        (item) =>
-                            item !==
-                            parseInt(val.target.attributes["data-id"].value, 10)
-                    );
-                    this.state.selected_journal_list = updatedList;
-                    val.target.classList.remove("selected-filter");
-                }
-            } else if (val.target.attributes["data-value"].value == "analytic") {
-                if (!val.target.classList.contains("selected-filter")) {
-                    this.state.selected_analytic_list.push(
-                        parseInt(val.target.attributes["data-id"].value, 10)
-                    );
-                    val.target.classList.add("selected-filter");
-                } else {
-                    const updatedList = this.state.selected_analytic_list.filter(
-                        (item) =>
-                            item !==
-                            parseInt(val.target.attributes["data-id"].value, 10)
-                    );
-                    this.state.selected_analytic_list = updatedList;
-                    val.target.classList.remove("selected-filter");
-                }
-            } else if (val.target.attributes["data-value"].value === "draft") {
-                if (val.target.classList.contains("selected-filter")) {
-                    const {draft, ...updatedAccount} = this.state.options;
-                    this.state.options = updatedAccount;
-                    val.target.classList.remove("selected-filter");
-                } else {
-                    this.state.options = {
-                        ...this.state.options,
-                        draft: true,
-                    };
-                    val.target.classList.add("selected-filter");
-                }
-            } else if (val.target.attributes["data-value"].value === "cash-basis") {
-                if (val.target.classList.contains("selected-filter")) {
-                    const {cash, ...updatedAccount} = this.state.method;
-                    this.state.method = updatedAccount;
-                    this.state.method = {
-                        ...this.state.method,
-                        accrual: true,
-                    };
-                    val.target.classList.remove("selected-filter");
-                } else {
-                    const {accrual, ...updatedAccount} = this.state.method;
-                    this.state.method = updatedAccount;
-                    this.state.method = {
-                        ...this.state.method,
-                        cash: true,
-                    };
-                    val.target.classList.add("selected-filter");
-                }
-            } else if (val.target.attributes["data-value"].value == "account") {
-                const accountId = parseInt(val.target.attributes["data-id"].value, 10);
-                if (!val.target.classList.contains("selected-filter")) {
-                    this.state.selected_account_list.push(accountId);
-                    val.target.classList.add("selected-filter");
-                } else {
-                    const updatedList = this.state.selected_account_list.filter(
-                        (item) => item !== accountId
-                    );
-                    this.state.selected_account_list = updatedList;
-                    val.target.classList.remove("selected-filter");
-                }
-            }
 
-        const selectedAccountIds = this.state.selected_account_rec.length > 0 
-            ? [this.state.selected_account_rec[0].id] 
-            : [];
-        let filtered_data = await this.orm.call(
+        let account_list = [];
+        let account_total = "";
+        let totalDebitSum = 0;
+        let totalCreditSum = 0;
+      
+        const target = val?.target;
+        const dataValue = target?.getAttribute?.("data-value");
+        const inputName = target?.name;
+      
+        // 1) Actualizar date_range según el origen del evento
+        if (inputName === "start_date") {
+          this.state.date_range = {
+            ...(typeof this.state.date_range === "object" ? this.state.date_range : {}),
+            start_date: this.date_range_from.el?.value || "",
+          };
+        } else if (inputName === "end_date") {
+          this.state.date_range = {
+            ...(typeof this.state.date_range === "object" ? this.state.date_range : {}),
+            end_date: this.date_range_to.el?.value,
+          };
+        } else if (dataValue === "month" || dataValue === "year" || dataValue === "quarter" ||
+                   dataValue === "last-month" || dataValue === "last-year" || dataValue === "last-quarter") {
+          // Presets de rango: usar string y limpiar errores
+          this.state.date_range = dataValue;
+          this.state.dateError = null;
+          this.state.exportDisabled = false;
+        } else if (dataValue === "journal") {
+          const id = parseInt(target.getAttribute("data-id"), 10);
+          if (!target.classList.contains("selected-filter")) {
+            this.state.selected_journal_list.push(id);
+            target.classList.add("selected-filter");
+          } else {
+            this.state.selected_journal_list = this.state.selected_journal_list.filter((x) => x !== id);
+            target.classList.remove("selected-filter");
+          }
+        } else if (dataValue === "analytic") {
+          const id = parseInt(target.getAttribute("data-id"), 10);
+          if (!target.classList.contains("selected-filter")) {
+            this.state.selected_analytic_list.push(id);
+            target.classList.add("selected-filter");
+          } else {
+            this.state.selected_analytic_list = this.state.selected_analytic_list.filter((x) => x !== id);
+            target.classList.remove("selected-filter");
+          }
+        } else if (dataValue === "draft") {
+          if (target.classList.contains("selected-filter")) {
+            const { draft, ...rest } = this.state.options || {};
+            this.state.options = rest;
+            target.classList.remove("selected-filter");
+          } else {
+            this.state.options = { ...(this.state.options || {}), draft: true };
+            target.classList.add("selected-filter");
+          }
+        } else if (dataValue === "cash-basis") {
+          if (target.classList.contains("selected-filter")) {
+            // Volver a devengo
+            this.state.method = { accrual: true };
+            target.classList.remove("selected-filter");
+          } else {
+            // Pasar a caja
+            this.state.method = { cash: true };
+            target.classList.add("selected-filter");
+          }
+        } else if (dataValue === "account") {
+          const accountId = parseInt(target.getAttribute("data-id"), 10);
+          if (!target.classList.contains("selected-filter")) {
+            this.state.selected_account_list.push(accountId);
+            target.classList.add("selected-filter");
+          } else {
+            this.state.selected_account_list = this.state.selected_account_list.filter((x) => x !== accountId);
+            target.classList.remove("selected-filter");
+          }
+        }
+        this.state.selected_journal_list  = [...new Set(this.state.selected_journal_list)];
+        this.state.selected_analytic_list = [...new Set(this.state.selected_analytic_list)];
+        this.state.selected_account_list  = [...new Set(this.state.selected_account_list)];
+
+        // 2) Validación en vivo del rango personalizado (si aplica)
+        if (!this.validateDateRange()) { 
+          // Aviso y NO llamamos al servidor
+          this.notification?.add(this.state.dateError || "Rango de fechas inválido.", { type: "danger" });
+          this.render(true);
+          return;
+        }
+        // --- 3) Preparar parámetros con fallbacks seguros ---
+        const journal_ids = Array.from(this.state.selected_journal_list || []);
+        const date_range  = this.state.date_range || null;      // string preset o {start_date,end_date}
+        const options     = this.state.options || {};           // el backend ya interpreta {} → posted
+        const analytic    = Array.from(this.state.selected_analytic_list || []);
+        const method      = this.state.method || { accrual: true };
+        const account_ids = (this.state.selected_account_rec || []).map((a) => a.id);
+
+        // --- 4) Llamada al servidor ---
+        const filtered_data = await this.orm.call(
             "account.general.ledger",
             "get_filter_values",
-            [
-                this.state.selected_journal_list,
-                this.state.date_range,
-                this.state.options,
-                this.state.selected_analytic_list,
-                this.state.method,
-                this.state.selected_account_rec.map(acc => acc.id) 
-            ]
+            [journal_ids, date_range, options, analytic, method, account_ids]
         );
-        $.each(filtered_data, function (index, value) {
-            if (
-                index !== "account_totals" &&
-                index !== "journal_ids" &&
-                index !== "analytic_ids" &&
-                index !== "account_ids"
-            ) {
-                account_list.push(index);
-            } else {
-                account_totals = value;
-                Object.values(account_totals).forEach((account_list) => {
-                    totalDebitSum += account_list.total_debit || 0;
-                    totalCreditSum += account_list.total_credit || 0;
-                });
-            }
-        });
-        let cleaned_account_data = {};
+
+        // (Opcional) refrescar catálogos si vienen en la respuesta
+        this.state.journals  = filtered_data.journal_ids  || this.state.journals;
+        this.state.analytics = filtered_data.analytic_ids || this.state.analytics;
+        this.state.accounts  = filtered_data.account_ids  || this.state.accounts;
+
+        // --- 5) Procesar totales y líneas ---
+        const account_totals = filtered_data.account_totals || {};
+        for (const accTot of Object.values(account_totals)) {
+            totalDebitSum  += accTot?.total_debit  || 0;
+            totalCreditSum += accTot?.total_credit || 0;
+        }
+
+        // Limpiar/normalizar estructura de líneas por cuenta
+        const cleaned_account_data = {};
         for (const [key, value] of Object.entries(filtered_data)) {
-          // Ignora claves que NO son cuentas
-          if (key === "account_totals" || key === "journal_ids" || key === "analytic_ids" || key === "account_ids") {
-            continue;
-          }
-        
-          // Normaliza la estructura a una lista PLANA de diccionarios [{...}, {...}, ...]
-          if (Array.isArray(value) && value.length) {
-            // value puede venir como [{...}], [[{...}]], o mezcla
-            const flat = value.flat(); // aplana un nivel si viniera anidado
-            cleaned_account_data[key] = flat.map(v => (Array.isArray(v) ? v[0] : v));
-          } else {
-            cleaned_account_data[key] = [];
-          }
+            if (key === "account_totals" || key === "journal_ids" || key === "analytic_ids" || key === "account_ids") {
+                continue;
+            }
+            account_list.push(key);
+            if (Array.isArray(value) && value.length) {
+                // value es lista de listas (cada move_line.read devuelve una lista)
+                const flat = value.flat(); // profundidad 1 basta
+                cleaned_account_data[key] = flat.map((v) => (Array.isArray(v) ? v[0] : v));
+            } else {
+                cleaned_account_data[key] = [];
+            }
+        }
+
         account_list = [...new Set(account_list)];
-        this.state.currency = (Object.values(account_totals)[0] || {}).currency_id || '';
-        }        
-        debugger;
-        console.log(this.state.selected_account_list);
-        this.state.account = account_list;
+        this.state.currency     = (Object.values(account_totals)[0] || {}).currency_id || "";
+        this.state.account      = account_list;
         this.state.account_data = cleaned_account_data;
         this.state.account_total = account_totals;
-        this.state.accounts = filtered_data.account_ids || [];
-        this.state.total_debit = totalDebitSum.toFixed(2);
+        this.state.total_debit  = totalDebitSum.toFixed(2);
         this.state.total_credit = totalCreditSum.toFixed(2);
-        if ($(this.unfoldButton.el.classList).find("selected-filter")) {
+
+        // --- 6) Limpiar toggle de "desplegar todo" si estaba activo ---
+        if (this.unfoldButton?.el?.classList?.contains("selected-filter")) {
             this.unfoldButton.el.classList.remove("selected-filter");
         }
+
+        // Redibujar
+        this.render(true);
     }
+        
     async unfoldAll(ev) {
         debugger;
         if (!ev.target.classList.contains("selected-filter")) {
@@ -430,6 +430,13 @@ class GeneralLedger extends owl.Component {
         var self = this;
         let startDate, endDate;
         let startYear, startMonth, startDay, endYear, endMonth, endDay;
+        const selectedJournalIDs = Array.from(self.state.selected_journal_list || []); 
+        const selectedJournalNames = selectedJournalIDs 
+          .map((journalID) =>{
+            const j = (self.state.journals || []).find((jj) => jj.id === journalID);
+            return j ? j.name : "";
+          })
+          .filter(Boolean); 
         if (self.state.date_range) {
             const today = new Date();
             if (self.state.date_range === "year") {
@@ -453,8 +460,8 @@ class GeneralLedger extends owl.Component {
                 startDate = new Date(today.getFullYear(), lastQuarter * 3, 1);
                 endDate = new Date(today.getFullYear(), (lastQuarter + 1) * 3, 0);
             } else {
-                startDate = new Date(self.state.date_range.start_date);
-                endDate = new Date(self.state.date_range.end_date);
+                startDate = self.state.date_range.start_date ? new Date(self.state.date_range.start_date) : null; 
+                endDate = self.state.date_range.end_date ? new Date(self.state.date_range.end_date) : null;
             }
             // Get the date components for start and end dates
             if (startDate) {
@@ -468,24 +475,18 @@ class GeneralLedger extends owl.Component {
                 endDay = endDate.getDate();
             }
         }
-        const selectedJournalIDs = Object.values(self.state.selected_journal_list);
-        const selectedJournalNames = selectedJournalIDs.map((journalID) => {
-            const journal = self.state.journals.find(
-                (journal) => journal.id === journalID
-            );
-            return journal ? journal.name : "";
-        });
-        const selectedAnalyticIDs = Object.values(self.state.selected_analytic_list);
-        const selectedAnalyticNames = selectedAnalyticIDs.map((analyticID) => {
-            const analytic = self.state.analytics.find(
-                (analytic) => analytic.id === analyticID
-            );
-            return analytic ? analytic.name : "";
-        });
-        let filters = {
+        const selectedAnalyticIDs = Array.from(self.state.selected_analytic_list || []);
+        const selectedAnalyticNames = selectedAnalyticIDs
+        .map((analyticID) => {
+            const analytic = (self.state.analytics || []).find((a) => a.id === analyticID);
+            return analytic ? analytic.name : ""; 
+        })
+        .filter(Boolean); 
+
+        const filters = {
             journal: selectedJournalNames,
             analytic: selectedAnalyticNames,
-            account: self.state.selected_analytic_account_rec,
+            account: self.state.selected_account_rec,
             options: self.state.options,
             start_date: null,
             end_date: null,

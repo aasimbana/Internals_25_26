@@ -37,16 +37,32 @@ class AccountGeneralLedger(models.TransientModel):
     _description = "General Ledger Report"
 
     @api.model
-    def view_report(self, option, tag):
-        """Retorna la estructura inicial sin datos, solo las opciones disponibles"""
+    def view_report(self, journal_id=None, date_range=None, *args, **kwargs):
+        """Retorna catálogos iniciales para el front (sin datos de líneas)."""
+        # 1) Diarios activos de la compañía
+        journal_ids = self.env["account.journal"].search_read(
+            [("company_id", "=", self.env.company.id), ("active", "=", True)],
+            ["name", "code", "type"],
+        )
+
+        # 2) Cuentas analíticas activas de la compañía
+        analytic_ids = self.env["account.analytic.account"].search_read(
+            [("company_id", "=", self.env.company.id), ("active", "=", True)],
+            ["name"],
+        )
+
+        # 3) Cuentas contables no deprecadas (OJO: aquí no existe 'active')
+        account_ids = self.env["account.account"].search_read(
+            [("company_id", "=", self.env.company.id), ("deprecated", "=", False)],
+            ["name", "code"],
+            order="code asc",
+        )
 
         return {
-            "journal_ids": self.env["account.account"].search_read([], ["name"]),
-            "analytic_ids": self.env["account.analytic.account"].search_read(
-                [], ["name"]
-            ),
-            "account_ids": self.env["account.account"].search_read([], ["name"]),
-            "account_totals": {},  # Vacío inicialmente
+            "journal_ids": journal_ids,
+            "analytic_ids": analytic_ids,
+            "account_ids": account_ids,
+            "account_totals": {},  # vacío inicialmente
         }
     @api.model
     def get_filter_values(
@@ -66,7 +82,7 @@ class AccountGeneralLedger(models.TransientModel):
             option_domain = ["posted", "draft"]
         domain = (
             [
-                ("account_id", "in", journal_id),
+                ("journal_id", "in", journal_id),
                 ("parent_state", "in", option_domain),
             ]
             if journal_id
@@ -139,15 +155,20 @@ class AccountGeneralLedger(models.TransientModel):
         move_line_ids = self.env["account.move.line"].search(domain)
         move_line_ids.mapped("account_id")
         account_ids = move_line_ids.mapped("account_id")
-        account_dict["journal_ids"] = self.env["account.account"].search_read(
-            [], ["name"]
+        account_dict["journal_ids"] = self.env["account.journal"].search_read(
+             [("company_id", "=", self.env.company.id), ("active", "=", True)],
+             ["name", "code", "type"]
         )
         account_dict["analytic_ids"] = self.env["account.analytic.account"].search_read(
-            [], ["name"]
+            [("company_id", "=", self.env.company.id), ("active", "=", True)],
+            ["name"]
         )
-        # account_dict["account_ids"] = self.env['account.account'].search_read(
-        #     [], ["name"]
-        # )
+        account_dict["account_ids"] = self.env['account.account'].search_read(
+             [("company_id", "=", self.env.company.id), ("deprecated", "=", False)],
+             ["name", "code"],
+             order="code asc"
+        )
+        
         for account in account_ids:
             move_line_id = move_line_ids.filtered(lambda x: x.account_id == account)
             move_line_list = []
@@ -180,19 +201,7 @@ class AccountGeneralLedger(models.TransientModel):
 
     @api.model
     def get_xlsx_report(self, data, response, report_name, report_action):
-        """
-        Generate an XLSX report based on the provided data and write it to the
-        response stream.
-
-        :param data: The data used to generate the report.
-        :type data: str (JSON format)
-
-        :param response: The response object to write the generated report to.
-        :type response: werkzeug.wrappers.Response
-
-        :param report_name: The name of the report.
-        :type report_name: str
-        """
+       
         data = json.loads(data)
         output = io.BytesIO()
         workbook = xlsxwriter.Workbook(output, {"in_memory": True})
@@ -304,22 +313,31 @@ class AccountGeneralLedger(models.TransientModel):
                         - data["total"][account]["total_credit"],
                         txt_name,
                     )
-                    for rec in data["data"][account]:
+                    for rec in data["data"].get(account, []):
                         row += 1
-                        partner = rec[0]["partner_id"]
-                        name = partner[1] if partner else None
-                        sheet.write(row, col, rec[0]["move_name"], txt_name)
-                        sheet.write(row, col + 1, rec[0]["date"], txt_name)
-                        sheet.merge_range(
-                            row, col + 2, row, col + 4, rec[0]["name"], txt_name
-                        )
-                        sheet.merge_range(row, col + 5, row, col + 6, name, txt_name)
-                        sheet.merge_range(
-                            row, col + 7, row, col + 8, rec[0]["debit"], txt_name
-                        )
-                        sheet.merge_range(
-                            row, col + 9, row, col + 10, rec[0]["credit"], txt_name
-                        )
+                        line = rec[0] if isinstance(rec, (list, tuple)) else rec
+
+                        partner = line.get("partner_id")
+                        partner_name = partner[1] if partner else ""
+                
+
+                        move_name = line.get("move_name", "")
+                        date_val = line.get("date", "")
+                        name_val = line.get("name", "") if line.get("name") else ""
+                        debit = line.get("debit") or 0.0
+                        credit = line.get("credit") or 0.0
+
+                        factura = (line.get("ref") or line.get("move_name")or"")
+
+                        sheet.write(row, col + 0, factura, txt_name)
+                        sheet.write(row, col + 1, date_val, txt_name)
+
+                        sheet.merge_range(row, col + 2, row, col + 4, name_val, txt_name)
+                        sheet.merge_range(row, col + 5, row, col + 6, partner_name, txt_name)
+                        
+                        sheet.merge_range(row, col + 7, row, col + 8, debit, txt_name)
+                        sheet.merge_range(row, col + 9, row, col + 10, credit, txt_name)
+
                         sheet.merge_range(row, col + 11, row, col + 12, " ", txt_name)
                 row += 1
                 sheet.merge_range(row, col, row, col + 6, "Total", filter_head)
