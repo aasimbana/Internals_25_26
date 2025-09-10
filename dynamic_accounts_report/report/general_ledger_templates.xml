@@ -179,62 +179,67 @@
                                             </strong>
                                         </th>
                                     </tr>
-                                    <t
-                                        t-foreach="data[accounts]"
-                                        t-as="valuelist"
-                                        t-key="valuelist_index"
-                                    >
-                                        <tr class="border-bottom">
-                                            <th colspan="6" style="width:10%">
-                                                <span>
-                                                    <t
-                                                        t-esc="valuelist[0]['move_name']"
-                                                    />
-                                                </span>
-                                            </th>
-                                            <th style="width:10%">
-                                                <span>
-                                                    <t t-esc="valuelist[0]['date']" />
-                                                </span>
-                                            </th>
-                                            <th style="width:10%">
-                                                <span>
-                                                    <t t-esc="valuelist[0]['name']" />
-                                                </span>
-                                            </th>
-                                            <th style="width:10%">
-                                                <span>
-                                                    <t
-                                                        t-if="valuelist[0]['partner_id']"
-                                                        t-esc="valuelist[0]['partner_id'][1]"
-                                                    />
-                                                </span>
-                                            </th>
-                                            <th style="width:10%">
-                                                <span>
-                                                    <t
-                                                        t-if="valuelist[0]['debit']"
-                                                        t-esc="total[accounts]['currency_id']"
-                                                    />
-                                                    <t
-                                                        t-if="valuelist[0]['debit']"
-                                                        t-esc="valuelist[0]['debit']"
-                                                    />
-                                                </span>
-                                            </th>
-                                            <th style="width:10%">
-                                                <span>
-                                                    <t
-                                                        t-if="valuelist[0]['credit']"
-                                                        t-esc="total[accounts]['currency_id']"
-                                                    />
-                                                    <t
-                                                        t-if="valuelist[0]['credit']"
-                                                        t-esc="valuelist[0]['credit']"
-                                                    />
-                                                </span>
-                                            </th>
-                                            <th style="width:10%" />
+                                    <!-- Líneas (movimientos) de la cuenta -->
+                                    <t t-if="data.get(accounts) and len(data[accounts])">
+                                        <t t-foreach="data[accounts]" t-as="line" t-key="line_index">
+                                            <tr class="border-bottom">
+                                                <!-- Columna Comunicación / move_name -->
+                                                <th colspan="6" style="width:10%">
+                                                    <span>
+                                                        <t t-esc="line.get('move_name', '')"/>
+                                                    </span>
+                                                </th>
+
+                                                <!-- Fecha -->
+                                                <th style="width:10%">
+                                                    <span><t t-esc="line.get('date', '')"/></span>
+                                                </th>
+
+                                                <!-- name -->
+                                                <th style="width:10%">
+                                                    <span><t t-esc="line.get('name', '')"/></span>
+                                                </th>
+
+                                                <!-- Partner -->
+                                                <th style="width:10%">
+                                                    <span>
+                                                        <t t-if="line.get('partner_id')">
+                                                            <t t-esc="line['partner_id'][1]"/>
+                                                        </t>
+                                                    </span>
+                                                </th>
+
+                                                <!-- Débito -->
+                                                <th style="width:10%">
+                                                    <span>
+                                                        <t t-if="line.get('debit')">
+                                                            <t t-esc="total[accounts]['currency_id']"/>
+                                                            <t t-esc="line['debit']"/>
+                                                        </t>
+                                                    </span>
+                                                </th>
+
+                                                <!-- Crédito -->
+                                                <th style="width:10%">
+                                                    <span>
+                                                        <t t-if="line.get('credit')">
+                                                            <t t-esc="total[accounts]['currency_id']"/>
+                                                            <t t-esc="line['credit']"/>
+                                                        </t>
+                                                    </span>
+                                                </th>
+
+                                                <th style="width:10%"></th>
+                                            </tr>
+                                        </t>
+                                    </t>
+
+                                    <!-- Si no hay movimientos, mensaje amigable -->
+                                    <t t-else="">
+                                        <tr>
+                                            <td colspan="12" style="padding:8px 16px; opacity:.7;">
+                                                Sin movimientos para esta cuenta en el rango seleccionado.
+                                            </td>
                                         </tr>
                                     </t>
                                 </tbody>

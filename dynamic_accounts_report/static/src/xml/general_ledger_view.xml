@@ -68,13 +68,13 @@
                                         >
                                             This Quarter
                                         </button>
-                                        <button
+                                        <!-- <button
                                             class="report-filter-button"
                                             t-att-data-value="'year'"
                                             type="button"
                                         >
                                             This Year
-                                        </button>
+                                        </button> -->
                                         <div
                                             role="separator"
                                             class="dropdown-divider"
@@ -93,13 +93,13 @@
                                         >
                                             Last quarter
                                         </button>
-                                        <button
+                                        <!-- <button
                                             class="report-filter-button"
                                             t-att-data-value="'last-year'"
                                             type="button"
                                         >
                                             Last year
-                                        </button>
+                                        </button> -->
                                         <div
                                             role="separator"
                                             class="dropdown-divider"
