@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <record id="view_helpdesk_support_form_inherit_custom" model="ir.ui.view">
+    <field name="name">helpdesk.support.form.inherit.custom</field>
+    <field name="model">helpdesk.support</field>
+    <field name="inherit_id" ref="website_helpdesk_support_ticket.helpdesk_support_form_view"/>
+    <field name="arch" type="xml">
+
+      <!-- Marcar campos obligatorios en la UI -->
+      <xpath expr="//field[@name='type_ticket_id']" position="attributes">
+        <attribute name="required">1</attribute>
+        <attribute name="options">{'no_create': True, 'no_create_edit': True}</attribute>
+      </xpath>
+      <xpath expr="//field[@name='subject_type_id']" position="attributes">
+        <attribute name="required">1</attribute>
+        <attribute name="options">{'no_create': True, 'no_create_edit': True}</attribute>
+      </xpath>
+      <xpath expr="//field[@name='user_id']" position="attributes">
+        <attribute name="required">1</attribute>
+      </xpath>
+      <xpath expr="//field[@name='email']" position="attributes">
+        <attribute name="required">1</attribute>
+      </xpath>
+      <xpath expr="//field[@name='company_id']" position="attributes">
+        <attribute name="required">1</attribute>
+      </xpath>
+
+   
+    </field>
+  </record>
+</odoo>
