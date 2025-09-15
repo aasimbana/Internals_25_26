@@ -430,6 +430,12 @@ class GeneralLedger extends owl.Component {
         var self = this;
         let startDate, endDate;
         let startYear, startMonth, startDay, endYear, endMonth, endDay;
+
+        const parseLocal = (s) => {
+            if(!s) return null; 
+            const [y, m, d] = s.split("-").map(Number);
+            return new Date(y, m - 1, d);
+        };
         const selectedJournalIDs = Array.from(self.state.selected_journal_list || []); 
         const selectedJournalNames = selectedJournalIDs 
           .map((journalID) =>{
@@ -460,8 +466,8 @@ class GeneralLedger extends owl.Component {
                 startDate = new Date(today.getFullYear(), lastQuarter * 3, 1);
                 endDate = new Date(today.getFullYear(), (lastQuarter + 1) * 3, 0);
             } else {
-                startDate = self.state.date_range.start_date ? new Date(self.state.date_range.start_date) : null; 
-                endDate = self.state.date_range.end_date ? new Date(self.state.date_range.end_date) : null;
+                startDate = self.state.date_range.start_date ? parseLocal(self.state.date_range.start_date) : null; 
+                endDate = self.state.date_range.end_date ? parseLocal(self.state.date_range.end_date) : null;
             }
             // Get the date components for start and end dates
             if (startDate) {
