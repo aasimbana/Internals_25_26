@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+  <data noupdate="0">
+    <record id="res_config_settings_view_form_inherit_backup_chunk"
+            model="ir.ui.view">
+      <field name="name">res.config.settings.view.form.inherit.backup.chunk</field>
+      <field name="model">res.config.settings</field>
+      <field name="priority" eval="30"/>
+      <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+      <field name="arch" type="xml">
+
+        <!-- Igual que tu ejemplo: insertamos dentro de <form> -->
+        <xpath expr="//form" position="inside">
+
+          <!-- APP: puedes cambiar "name" y data-key si quieres otro agrupador -->
+          <app name="auto_database_backup"
+               string="Backup Configuration"
+               data-string="Backup Configuration"
+               data-key="auto_database_backup">
+
+            <!-- BLOQUE: “Configuración de megabytes” -->
+            <block id="backup_chunk_block"
+                   class="app_settings_block"
+                   title="Configuración de megabytes"
+                   data-key="auto_database_backup">
+
+              <!-- SETTING: Número de megabytes + tooltip -->
+              <setting id="backup_chunk_setting">
+                <span class="o_form_label d-inline-flex align-items-center">
+                  Number of megabytes
+                  <i class="fa fa-info-circle ms-2"
+                     title="Take into account the server requirements for changing this variable."
+                     aria-label="Take into account the server requirements for changing this variable."
+                     role="img"/>
+                </span>
+
+                <!-- Icono multicompany (opcional, como tu ejemplo) -->
+                <span class="fa fa-lg fa-database"
+                      title="Values defined here can affect the server performance."
+                      aria-label="Values defined here can affect the server performance."
+                      role="img"/>
+
+                <div class="text-muted">
+                  Fragment size for uploading/downloading backups (in MB).
+                </div>
+
+                <div class="content-group">
+                  <div class="mt16">
+                    <label for="backup_chunk_mb"
+                           string="Size per fragment (MB)"
+                           class="col-3 col-lg-3 o_light_label"/>
+                    <field name="backup_chunk_mb"
+                           class="oe_inline"
+                           placeholder="Ej. 100"
+                           options="{'no_open': True}"/>
+                    <!-- Aquí va la nota -->
+                    <div class="text-muted" style="margin-top:4px;">
+                      The size must be between <b>1 and 150 MB</b>.
+                    </div>
+                  </div>
+                </div>
+              </setting>
+
+            </block>
+          </app>
+        </xpath>
+      </field>
+    </record>
+    </data>       
+</odoo>

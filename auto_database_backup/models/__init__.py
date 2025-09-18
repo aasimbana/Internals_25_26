@@ -19,3 +19,4 @@
 #
 ###############################################################################
 from . import db_backup_configure
+from . import res_config_backup

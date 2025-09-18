@@ -450,7 +450,6 @@
         </field>
         <field name="context">{'search_default_all': 1}</field>
     </record>
-
     <menuitem
         id="db_backup_menu_root"
         name="Automatic Database Backup"

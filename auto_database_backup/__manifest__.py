@@ -19,7 +19,7 @@
 #
 ###############################################################################
 {
-    "name": "Automatic Database Backup To Local Server, Remote Server,"
+    "name": "=,"
     "Google Drive, Dropbox, Onedrive, Nextcloud and Amazon S3 Odoo17",
     "version": "17.0.6.0.1",
     "live_test_url": "https://youtu.be/Q2yMZyYjuTI",
@@ -34,6 +34,7 @@
         "data/ir_cron_data.xml",
         "data/mail_template_data.xml",
         "views/db_backup_configure_views.xml",
+        "views/res_config_backup.xml",
         "wizard/dropbox_auth_code_views.xml",
     ],
     "external_dependencies": {
