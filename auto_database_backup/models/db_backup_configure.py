@@ -861,73 +861,122 @@ class DbBackupConfigure(models.Model):
                         )
                     else:
                         raise ValidationError_("Please check connection")
-            # Dropbox backup
+            # Dropbox backu
             elif rec.backup_destination == "dropbox":
+                # 1) Generar el dump UNA sola vez
                 temp = tempfile.NamedTemporaryFile(suffix=".%s" % rec.backup_format)
                 with open(temp.name, "wb+") as tmp:
                     self.dump_data(rec.db_name, tmp, rec.backup_format)
+
                 try:
+                    # 2) Cliente Dropbox (modo offline con refresh token)
                     dbx = dropbox.Dropbox(
                         app_key=rec.dropbox_client_key,
                         app_secret=rec.dropbox_client_secret,
                         oauth2_refresh_token=rec.dropbox_refresh_token,
                     )
-                    dropbox_destination = rec.dropbox_folder + "/" + backup_filename
 
-                    # ======================
-                    # SUBIDA EN FRAGMENTOS
-                    # ======================
-                    CHUNK_SIZE = 100 * 1024 * 1024  # 100 MB por fragmento
+                    # 3) Normalizar carpeta y armar ruta final
+                    folder = (rec.dropbox_folder or "").strip()
+                    if folder and not folder.startswith("/"):
+                        folder = "/" + folder
+                    dropbox_destination = (folder.rstrip("/") + "/" + backup_filename) if folder else ("/" + backup_filename)
+
+                    # 4) Chunk configurable: mínimo 50 MB; petición efectiva ≤150 MiB (Dropbox), múltiplos de 4 MiB
+                    params = self.env['ir.config_parameter'].sudo()
+                    raw = params.get_param('auto_database_backup.chunk_mb', '50')
+                    try:
+                        user_mb = float(str(raw).strip().lower().replace(',', '.').replace('mb', ''))
+                    except Exception:
+                        user_mb = 50.0
+
+                    user_bytes = int(max(50.0, user_mb) * 1024 * 1024)   # mínimo 50 MB
+                    API_MAX_REQUEST_BYTES = 150 * 1024 * 1024            # tope real por request (Dropbox)
+                    FOUR_MIB = 4 * 1024 * 1024                           # cuantización recomendada
+
+                    effective = min(user_bytes, API_MAX_REQUEST_BYTES)
+                    CHUNK_SIZE = max(FOUR_MIB, (effective // FOUR_MIB) * FOUR_MIB)
+
+                    # 5) Subida: directa (pequeño) o fragmentada (grande) con overwrite
                     file_size = os.path.getsize(temp.name)
+                    _logger.info(
+                        "Dropbox: subiendo %s (%s bytes) a %s (chunk=%s MB)",
+                        backup_filename, file_size, dropbox_destination, int(CHUNK_SIZE / 1024 / 1024),
+                    )
 
                     with open(temp.name, "rb") as f:
                         if file_size <= CHUNK_SIZE:
-                            # Subida normal si el archivo es pequeño
-                            dbx.files_upload(f.read(), dropbox_destination)
-                        else:
-                            # Subida fragmentada si el archivo es grande
-                                upload_session_start_result = dbx.files_upload_session_start(f.read(CHUNK_SIZE))
-                                cursor = dropbox.files.UploadSessionCursor(
-                                    session_id=upload_session_start_result.session_id,
-                                    offset=f.tell()
-                                )
-                                commit = dropbox.files.CommitInfo(path=dropbox_destination)
-
-                                while f.tell() < file_size:
-                                    if (file_size - f.tell()) <= CHUNK_SIZE:
-                                        dbx.files_upload_session_finish(f.read(CHUNK_SIZE), cursor, commit)
-                                    else:
-                                        dbx.files_upload_session_append_v2(f.read(CHUNK_SIZE), cursor)
-                                        cursor.offset = f.tell()
-
-                        # ======================
-                        # ELIMINAR ARCHIVOS VIEJOS
-                        # ======================
-                        if rec.auto_remove:
-                            files = dbx.files_list_folder(rec.dropbox_folder)
-                            file_entries = files.entries
-                            expired_files = list(
-                                filter(
-                                    lambda fl: (
-                                        fields.datetime.now() - fl.client_modified
-                                    ).days >= rec.days_to_remove,
-                                    file_entries,
-                                )
+                            # Subida directa
+                            dbx.files_upload(
+                                f.read(),
+                                dropbox_destination,
+                                mode=dropbox.files.WriteMode.overwrite,
+                                mute=True,
                             )
-                            for file in expired_files:
-                                dbx.files_delete_v2(file.path_display)
+                        else:
+                            # Subida por sesión (fragmentada)
+                            start = dbx.files_upload_session_start(f.read(CHUNK_SIZE))
+                            cursor = dropbox.files.UploadSessionCursor(
+                                session_id=start.session_id,
+                                offset=f.tell(),
+                            )
+                            commit = dropbox.files.CommitInfo(
+                                path=dropbox_destination,
+                                mode=dropbox.files.WriteMode.overwrite,
+                                mute=True,
+                            )
+                            while f.tell() < file_size:
+                                remaining = file_size - f.tell()
+                                if remaining <= CHUNK_SIZE:
+                                    dbx.files_upload_session_finish(f.read(CHUNK_SIZE), cursor, commit)
+                                    break
+                                dbx.files_upload_session_append_v2(f.read(CHUNK_SIZE), cursor)
+                                cursor.offset = f.tell()
 
-                        # ======================
-                        # NOTIFICACIÓN DE ÉXITO
-                        # ======================
-                        if rec.notify_user:
-                            mail_template_success.send_mail(rec.id, force_send=True)
+                    _logger.info("Dropbox: subida completada -> %s", dropbox_destination)
+
+                    # 6) Eliminar archivos viejos (retención) con paginación
+                    if rec.auto_remove:
+                        try:
+                            list_path = folder or ""  # "" = raíz
+                            result = dbx.files_list_folder(list_path)
+                            entries = list(result.entries)
+                            while result.has_more:
+                                result = dbx.files_list_folder_continue(result.cursor)
+                                entries.extend(result.entries)
+
+                            from datetime import timezone
+                            now = fields.datetime.now().replace(tzinfo=timezone.utc)
+
+                            for it in entries:
+                                if isinstance(it, dropbox.files.FileMetadata) and it.client_modified:
+                                    if (now - it.client_modified).days >= rec.days_to_remove:
+                                        try:
+                                            dbx.files_delete_v2(it.path_lower or it.path_display)
+                                            _logger.info(
+                                                "Dropbox: eliminado %s por retención (%s días)",
+                                                it.name, rec.days_to_remove
+                                            )
+                                        except Exception as de:
+                                            _logger.warning("Dropbox: no se pudo borrar %s: %s", it.name, de)
+                        except Exception as le:
+                            _logger.warning("Dropbox: limpieza falló: %s", le)
+
+                    # 7) Notificación de éxito (correo)
+                    if rec.notify_user:
+                        mail_template_success.send_mail(rec.id, force_send=True)
 
                 except Exception as error:
                     rec.generated_exception = error
-                    _logger.info("Dropbox Exception: %s", error)
+                    _logger.exception("Dropbox Exception")
                     if rec.notify_user:
                         mail_template_failed.send_mail(rec.id, force_send=True)
+                finally:
+                    # 8) Limpiar temporal
+                    try:
+                        os.unlink(temp.name)
+                    except Exception:
+                        pass
 
             # Onedrive Backup
             elif rec.backup_destination == "onedrive":
@@ -1142,6 +1191,18 @@ class DbBackupConfigure(models.Model):
                         # notifying them about the failed backup
                         if rec.notify_user:
                             mail_template_failed.send_mail(rec.id, force_send=True)
+    #todo esto es para el backup
+    def _get_chunk_size_bytes(self):
+        """Lee el tamaño de fragmento (MB) desde Ajustes (ir.config_parameter) y lo devuelve en bytes."""
+        icp = self.env["ir.config_parameter"].sudo()
+        val = icp.get_param("l10n_ec_backup_configuration.chunk_mb")
+        try:
+            chunk_mb = int(val) if val else 100  # default 100 MB si no está configurado
+        except Exception:
+            chunk_mb = 100
+        chunk_mb = max(1, chunk_mb)             # mínimo 1 MB por seguridad
+        return chunk_mb * 1024 * 1024
+
 
     def dump_data(self, db_name, stream, backup_format):
         """Dump database `db` into file-like object `stream` if stream is None
