@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Parent menu: hooked to the main menu of your module -->
+    <menuitem
+        id="helpdesk_reports"
+        name="Helpdesk Reports"
+        sequence="15"
+        parent="website_helpdesk_support_ticket.main_helpdesk_support"
+    />
+
+    <!-- Submenu that opens the wizard -->
+    <menuitem
+        id="menu_helpdesk_report_wizard"
+        name="Ticket Report"
+        sequence="1"
+        parent="helpdesk_reports"
+        action="helpdesk_report_wizard_action"
+    />
+
+    <menuitem
+        id="menu_data_report"
+        name="Data Report"
+        sequence="2"
+        parent="helpdesk_reports"
+        action="helpdesk_report_date_action"
+    />
+
+
+
+</odoo>

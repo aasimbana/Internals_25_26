@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+
+    <!-- Template del documento PDF -->
+    <template id="report_helpdesk_pdf_document">
+        <t t-call="web.external_layout">
+            <main class="page">
+                <h2>Reporte Helpdesk</h2>
+        
+                <!-- Mostrar el rango de fechas debajo del título -->
+                <div style="text-align: center; margin-bottom: 15px; font-style: italic; color: #666;">
+                    <div style="display: none; color: red; font-size: 8px;">
+                        DEBUG: data.fecha_inicio = '<t t-esc="data.get('fecha_inicio', '')"/>'
+                        DEBUG: data.fecha_fin = '<t t-esc="data.get('fecha_fin', '')"/>'
+                    </div>
+                    
+                    <t t-if="data.get('fecha_inicio', '') != '' or data.get('fecha_fin', '') != ''">
+                        Período: 
+                        <t t-if="data.get('fecha_inicio', '') != ''">
+                            del <t t-esc="data.get('fecha_inicio', '')"/>
+                        </t>
+                        <t t-if="data.get('fecha_fin', '') != ''">
+                            al <t t-esc="data.get('fecha_fin', '')"/>
+                        </t>
+                    </t>
+                    <t t-else="">
+                        Período: Todas las fechas
+                    </t>
+                </div>
+
+                <table style="width:100%; border-collapse:collapse;" class="table table-sm table-bordered">
+                    <thead>
+                        <tr>
+                            <th style="border:1px solid #999; padding:4px; background-color:#D9E1F2;">
+                                ESTADO / TÉCNICO
+                            </th>
+                            <!-- Cabeceras de técnicos -->
+                            <t t-foreach="data.get('empleados', [])" t-as="emp">
+                                <th style="border:1px solid #999; padding:4px; text-align:center; background-color:#D9E1F2;">
+                                    <t t-esc="emp.get('name','')"/>
+                                </th>
+                            </t>
+                            <th style="border:1px solid #999; padding:4px; text-align:center; background-color:#D9E1F2;">
+                                TOTAL ESTADO
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Filas de estados -->
+                        <t t-foreach="data.get('estados', [])" t-as="estado">
+                            <tr>
+                                <td style="border:1px solid #999; padding:4px; background-color:#FCE4D6;">
+                                    <t t-esc="estado"/>
+                                </td>
+                                <!-- Conteo por técnico -->
+                                <t t-foreach="data.get('empleados', [])" t-as="emp">
+                                    <td style="border:1px solid #999; padding:4px; text-align:center;">
+                                        <t t-esc="data.get('conteo', {}).get(estado, {}).get(emp.get('name',''), 0)"/>
+                                    </td>
+                                </t>
+                                <!-- Total por estado -->
+                                <td style="border:1px solid #999; padding:4px; text-align:center; font-weight:bold; background-color:#BDD7EE;">
+                                    <t t-esc="sum(data.get('conteo', {}).get(estado, {}).values())"/>
+                                </td>
+                            </tr>
+                        </t>
+
+                        <!-- Fila TOTAL POR TÉCNICO -->
+                        <tr>
+                            <td style="border:1px solid #999; padding:4px; font-weight:bold; background-color:#BDD7EE;">
+                                TOTAL POR TÉCNICO
+                            </td>
+                            <t t-foreach="data.get('empleados', [])" t-as="emp">
+                                <td style="border:1px solid #999; padding:4px; text-align:center; font-weight:bold; background-color:#BDD7EE;">
+                                    <t t-esc="data.get('total_por_tecnico', {}).get(emp.get('name',''),0)"/>
+                                </td>
+                            </t>
+                            <td style="border:1px solid #999; padding:4px; text-align:center; font-weight:bold; background-color:#FFC000;">
+                                <t t-esc="data.get('total_general', 0)"/>
+                            </td>
+                        </tr>
+
+                        <!-- Fila TOTAL GENERAL en una sola celda -->
+                        <tr>
+                            <td t-att-colspan="len(data.get('empleados', [])) + 2"
+                                style="border:1px solid #999; padding:6px; text-align:center; font-weight:bold; background-color:#FFB300;">
+                                TOTAL GENERAL: <t t-esc="data.get('total_general',0)"/>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td t-att-colspan="len(data.get('empleados', [])) + 2"
+                                style="border:1px solid #999; padding:4px; text-align:center; font-style:italic; color:#666; background-color:#f9f9f9;">
+                                Reporte generado el <t t-esc="data.get('fecha_generacion', '')"/>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </main>
+        </t>
+    </template>
+
+    <!-- Template que llama al documento desde html_container -->
+    <template id="report_helpdesk_pdf">
+        <t t-call="web.html_container">
+            <t t-call="helpdesk_custom.report_helpdesk_pdf_document"/>
+        </t>
+    </template>
+
+</odoo>

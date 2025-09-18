@@ -27,4 +27,13 @@ class HelpdeskSupport(models.Model):
             )
         return super(HelpdeskSupport, self).set_to_close()
 
-    
+    def open_helpdesk_report_wizard(self):
+        return {
+            'name': 'Reportes de Helpdesk',
+            'type': 'ir.actions.act_window',
+            'res_model': 'helpdesk.report.wizard',
+            'view_mode': 'form',
+            'view_id': self.env.ref('helpdesk_custom.view_helpdesk_report_wizard_form').id,
+            'target': 'new',        # hace que sea modal (pequeño)
+        }
+ 
