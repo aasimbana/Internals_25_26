@@ -58,6 +58,7 @@
                                             class="report-filter-button"
                                             t-att-data-value="'month'"
                                             type="button"
+                                            t-on-click="applyFilter"
                                         >
                                             This Month
                                         </button>
@@ -65,6 +66,7 @@
                                             class="report-filter-button"
                                             t-att-data-value="'quarter'"
                                             type="button"
+                                            t-on-click="applyFilter"
                                         >
                                             This Quarter
                                         </button>
@@ -118,6 +120,7 @@
                                                 t-ref="date_from"
                                                 style="border:none;border-bottom: 1px solid #000;padding: 5px;outline: none;"
                                                 name="start_date"
+                                                t-on-change="applyFilter"
                                             />
                                         </div>
 
@@ -134,6 +137,7 @@
                                                 t-ref="date_to"
                                                 style="border:none;border-bottom: 1px solid #000;padding: 5px;outline: none;"
                                                 name="end_date"
+                                                t-on-change="applyFilter"
                                             />
                                         </div>
                                     </div>
