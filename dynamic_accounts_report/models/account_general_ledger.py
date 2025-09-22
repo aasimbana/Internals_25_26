@@ -1,23 +1,3 @@
-################################################################################
-#
-#    Cybrosys Technologies Pvt. Ltd.
-#
-#    Copyright (C) 2023-TODAY Cybrosys Technologies(<https://www.cybrosys.com>).
-#    Author: Ammu Raj (odoo@cybrosys.com)
-#
-#    You can modify it under the terms of the GNU LESSER
-#    GENERAL PUBLIC LICENSE (LGPL v3), Version 3.
-#
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU LESSER GENERAL PUBLIC LICENSE (LGPL v3) for more details.
-#
-#    You should have received a copy of the GNU LESSER GENERAL PUBLIC LICENSE
-#    (LGPL v3) along with this program.
-#    If not, see <http://www.gnu.org/licenses/>.
-#
-################################################################################
 import calendar
 import io
 import json
@@ -28,7 +8,7 @@ from dateutil.relativedelta import relativedelta
 
 from odoo import api, fields, models
 from odoo.tools import date_utils
-
+from odoo.exceptions import UserError
 
 class AccountGeneralLedger(models.TransientModel):
     """For creating General Ledger report"""
@@ -68,6 +48,11 @@ class AccountGeneralLedger(models.TransientModel):
     def get_filter_values(
         self, journal_id, date_range, options, analytic, method, account_ids=None
     ):
+        if not date_range:
+            raise UserError("Please select a date range")
+        elif ('start_date' in date_range) ^ ('end_date' in date_range):
+            raise UserError("Debes especificar tanto start_date como end_date.")
+
         account_dict = {}
         account_totals = {}
         today = fields.Date.today()
@@ -369,4 +354,4 @@ class AccountGeneralLedger(models.TransientModel):
         workbook.close()
         output.seek(0)
         response.stream.write(output.read())
-        output.close()
+        output.close() 

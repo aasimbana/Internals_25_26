@@ -1,11 +1,13 @@
 /** @odoo-module */
 
-const {Component} = owl;
-import {registry} from "@web/core/registry";
-import {useService} from "@web/core/utils/hooks";
-import {useRef, useState} from "@odoo/owl";
-import {BlockUI} from "@web/core/ui/block_ui";
-import {download} from "@web/core/network/download";
+const { Component } = owl;
+import { registry } from "@web/core/registry";
+import { useService } from "@web/core/utils/hooks";
+import { useRef, useState } from "@odoo/owl";
+import { BlockUI } from "@web/core/ui/block_ui";
+import { download } from "@web/core/network/download";
+
+// Define action registry at the top level
 const actionRegistry = registry.category("actions");
 
 class GeneralLedger extends owl.Component {
@@ -32,14 +34,15 @@ class GeneralLedger extends owl.Component {
             analytics: [],
             selected_analytic_list: [],
             accounts: [],
-            all_accounts:[],
-            filteredAccounts:[],
+            all_accounts: [],
+            filteredAccounts: [],
             selected_account_list: [],
             selected_account_rec: [],
-            date_range: null,
+            date_range: { start_date: null, end_date: null }, //siempre objeto
+            date_preset: null,
             options: null,
-            method: { accrual: true }, 
-            search:'',
+            method: { accrual: true },
+            search: '',
             exportDisabled: false,
             dateError: null,
             title: null,
@@ -48,116 +51,235 @@ class GeneralLedger extends owl.Component {
             account_total_list: null,
         });
         this.loadInitialOptions();
-        //this.load_data((self.initial_render = true));
     }
+
+    setDateRange(rangeType) {
+        const today = new Date();
+        let startDate, endDate;
+        const y = today.getFullYear();
+
+        if (rangeType === "thisMonth") {
+            const m = today.getMonth();
+            startDate = new Date(y, m, 1);
+            endDate = new Date(y, m + 1, 0);
+        } else if (rangeType === "lastMonth") {
+            const m = today.getMonth() - 1;
+            startDate = new Date(y, m, 1);
+            endDate = new Date(y, m + 1, 0);
+        }else {
+            return;
+        }
+
+        const ymd = (d) => {
+            const yyyy = d.getFullYear();
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
+            return `${yyyy}-${mm}-${dd}`;   
+        }
+
+        const startStr = ymd(startDate);
+        const endStr = ymd(endDate);
+
+        this.state.date_range = {start_date: startStr, end_date: endStr};   
+        this.state.range_label =
+            `${startStr.slice(8,10)}/${startStr.slice(5,7)}/${startStr.slice(0,4)} - ` +
+            `${endStr.slice(8,10)}/${endStr.slice(5,7)}/${endStr.slice(0,4)}`;
+        if (this.date_range_from?.el) this.date_range_from.el.value = startStr;
+        if (this.date_range_to?.el) this.date_range_to.el.value = endStr;
+    };
+
+
+    updateFilter(ev) {
+        const t = ev?.target;
+        if (!t) return;
+      
+        // Asegura objeto
+        if (!this.state.date_range || typeof this.state.date_range !== "object") {
+          this.state.date_range = { start_date: null, end_date: null };
+        }
+        const normalize = (s) => {
+            if (!s) return null;
+            // acepta "YYYY-MM-DD" o "DD/MM/YYYY"
+            if (s.includes("-")) return s; // ya está ISO
+            if (s.includes("/")) {
+              const [dd, mm, yyyy] = s.split("/").map(Number);
+              return `${yyyy}-${String(mm).padStart(2,"0")}-${String(dd).padStart(2,"0")}`;
+            }
+            return s; // fallback
+          };
+      
+        if (t.name === "start_date") {
+          this.state.date_range.start_date = normalize(t.value) || null; // "YYYY-MM-DD"
+        } else if (t.name === "end_date") {
+          this.state.date_range.end_date = normalize(t.value) || null;
+        } else {
+          // Si usas presets con data-value:
+          const dv = t.getAttribute?.("data-value");
+          if (dv) {
+            // guarda el preset como string en state.date_range (filter ya lo maneja)
+            this.state.date_range = dv; // "month" | "year" | ...
+            this.state.dateError = null;
+            this.state.exportDisabled = false;
+          }
+        }
+      
+        // No RPC aquí
+        this.render(true);
+      }
+      
     validateDateRange() {
         const dr = this.state.date_range;
         // Si el date_range es un preset (string), no hay nada que validar
         if (!dr || typeof dr === "string") {
-          this.state.dateError = null;
-          this.state.exportDisabled = false;
-          return true;
+            this.state.dateError = null;
+            this.state.exportDisabled = false;
+            return true;
         }
         const { start_date, end_date } = dr || {};
         if (!start_date || !end_date) {
-          // Si falta una de las dos, no bloqueamos, pero tampoco hay error
-          this.state.dateError = null;
-          this.state.exportDisabled = false;
-          return true;
+            // Si falta una de las dos, no bloqueamos, pero tampoco hay error
+            this.state.dateError = null;
+            this.state.exportDisabled = false;
+            return true;
         }
-        const s = new Date(start_date);
-        const e = new Date(end_date);
-        if (isNaN(s.getTime()) || isNaN(e.getTime())) {
-          this.state.dateError = "Formato de fecha inválido.";
-          this.state.exportDisabled = true;
-          return false;
-        }
+        const parseLocal = (s) => {
+    if (!s) return null;
+    if (s.includes("-")) { // YYYY-MM-DD
+      const [y, m, d] = s.split("-").map(Number);
+      return new Date(y, m - 1, d);
+    }
+    if (s.includes("/")) { // DD/MM/YYYY
+      const [d, m, y] = s.split("/").map(Number);
+      return new Date(y, m - 1, d);
+    }
+    return new Date(s);
+  };
+
+    const s = parseLocal(start_date);
+    const e = parseLocal(end_date);
+
+    if (isNaN(s?.getTime()) || isNaN(e?.getTime())) {
+    this.state.dateError = "Formato de fecha inválido.";
+    this.state.exportDisabled = true;
+    return false;
+  }
+        
         if (e < s) {
-          this.state.dateError = "La fecha final no puede ser menor que la inicial.";
-          this.state.exportDisabled = true;
-          return false;
+            this.state.dateError = "La fecha final no puede ser menor que la inicial.";
+            this.state.exportDisabled = true;
+            return false;
         }
         this.state.dateError = null;
         this.state.exportDisabled = false;
         return true;
-      }
-      
-      async loadInitialOptions() {
+    }
+
+    async loadInitialOptions() {
         // Solo para catálogos iniciales
-        const data = await this.orm.call(
-          "account.general.ledger",
-          "view_report",
-          [null, null]
-        );
-      
-        this.state.journals  = data.journal_ids  || [];
-        this.state.analytics = data.analytic_ids || [];
-        this.state.accounts  = data.account_ids  || [];
-        this.state.filteredAccounts = Array.isArray(this.state.accounts) ? [...this.state.accounts] : [];
-      }      
-
-    selectAccount(event) {
-        const accountId = event.target.dataset.value;
-        if (accountId === "null") {
-            // Si el usuario selecciona "All", seleccionamos todas las cuentas
-            this.state.selected_account_rec = [];
-            this.load_data(); // Llama a load_data para cargar todas las cuentas
-        } else {
-            // Buscar la cuenta específica
-            const selectedAccount = this.state.filteredAccounts.find(
-                (account) => account.id == accountId
-            );
-            if (selectedAccount) {
-                this.state.selected_account_rec = [selectedAccount];
-            }
-        }
-        this.render(true); 
-    }
-
-    // Filtra las cuentas según el valor del campo de búsqueda
-    async updateAccountList(event) {
-        this.state.search = event.target.value.toLowerCase(); // Guardamos el valor de la búsqueda
-        if (event.code === "Enter") {
-            // Si se presiona Enter
-            this._onAccountPressEnterKey();
-        } else {
-            // Si no es Enter, solo filtra
-            this.filterAccounts();
-        }
-    }
-    
-    _onAccountPressEnterKey() {
-        if (this.state.search) {
-            this.filterAccounts(); // Realiza el filtro
-        }
-    }
-
-    filterAccounts() {
-        const searchQuery = this.state.search ? this.state.search.toLowerCase() : '';
-        if (searchQuery) {
-            this.state.filteredAccounts = this.state.all_accounts.filter(
-                (account) =>
-                    (account.name && account.name.toLowerCase().includes(searchQuery)) || 
-                    (account.code && account.code.toLowerCase().includes(searchQuery))
-            );
-            this.state.accounts = this.state.filteredAccounts; // Actualizamos la lista con las cuentas filtradas
-        } else {
-            this.state.filteredAccounts = [...this.state.all_accounts];
-        }
-        this.render(true);
-    }
-
-    // Método para cargar todas las cuentas
-    async fetchAccounts() {
-        debugger;
         const data = await this.orm.call(
             "account.general.ledger",
             "view_report",
             [null, null]
         );
-        this.state.all_accounts = data.account_ids || [];
+
+        this.state.journals = data.journal_ids || [];
+        this.state.analytics = data.analytic_ids || [];
         this.state.accounts = data.account_ids || [];
-        this.state.filteredAccounts = [...this.state.all_accounts];
+        
+        const base = (this.state.accounts || []).filter(a => a && a.id != null);
+        this.state.all_accounts     = [{ id: null, name: "ALL" }, ...base];
+        this.state.filteredAccounts = this.state.all_accounts.slice();
+    this.render(true);
+    }
+    
+    selectAccount(e) {
+        const raw = (e.currentTarget || e.target)?.dataset?.value;
+        if (raw === "null") {
+            this.state.selected_account_rec = [];
+            
+        } else {
+            const id = Number(raw);
+            const list = this.state.accounts || [];
+            const sel = list.find(a => a?.id === id || String(a?.id) === raw);
+            this.state.selected_account_rec = sel ? [sel] : []; 
+        }
+        if(typeof this.load_data === "function") this.load_data(); //Llama a load_data para cargar todas las cuentas
+        
+        this.render(true);
+    }
+
+    // Filtra las cuentas según el valor del campo de búsqueda
+    async updateAccountList(event) {
+        const value = (event?.target?.value || "").toString().toLowerCase().trim();
+        this.state.search = value;
+
+        const base = (this.state.accounts || []).filter(a => a && a.id != null);
+
+    if (!value) {
+       
+        this.state.filteredAccounts = [{id:null, name:"ALL"}, ...base];
+    } else {
+       
+        const filtered = base.filter(acc => {
+            const name = (acc.name || "").toLowerCase();
+            const code = (acc.code || "").toLowerCase();
+            return name.includes(value) || code.includes(value);
+        });
+        this.state.filteredAccounts = [{id:null, name:"ALL"}, ...filtered];
+    }
+
+    this.render(true); 
+    }
+
+    _onAccountPressEnterKey() {
+        this.updateAccountList({ target: { value: this.state.search || "" } });
+        // if (this.state.search) {
+        //     this.filterAccounts(); // Realiza el filtro
+        // }
+    }
+    
+    filterAccounts() {
+        const value = (this.state.search || "").toLowerCase().trim();
+        const base = (this.state.accounts || []).filter(a => a && a.id != null);
+      
+        const filtered = value
+          ? base.filter(acc =>
+              (acc.name || "").toLowerCase().includes(value) ||
+              (acc.code || "").toLowerCase().includes(value)
+            )
+          : base;
+      
+        // mantiene ALL al inicio y NO toca this.state.accounts
+        this.state.filteredAccounts = [{ id: null, name: "ALL" }, ...filtered];
+      
+        this.render(true);
+        // const searchQuery = this.state.search ? this.state.search.toLowerCase() : '';
+        // if (searchQuery) {
+        //     this.state.filteredAccounts = this.state.all_accounts.filter(
+        //         (account) =>
+        //             (account.name && account.name.toLowerCase().includes(searchQuery)) ||
+        //             (account.code && account.code.toLowerCase().includes(searchQuery))
+        //     );
+        //     this.state.accounts = this.state.filteredAccounts; // Actualizamos la lista con las cuentas filtradas
+        // } else {
+        //     this.state.filteredAccounts = [...this.state.all_accounts];
+        // }
+        // this.render(true);
+    }
+     
+    // Método para cargar todas las cuentas
+    async fetchAccounts() {
+        const data = await this.orm.call(
+            "account.general.ledger",
+            "view_report",
+            [null, null]
+        );
+        const base = (data.account_ids || []).filter(a => a && a.id != null);
+        this.state.accounts = base; 
+
+        this.state.all_accounts = [{ id: null, name:"ALL"}, ...base];
+        this.state.filteredAccounts = this.state.all_accounts.slice();
+
         this.render(true);
     }
     async printPdf(ev) {
@@ -167,6 +289,7 @@ class GeneralLedger extends owl.Component {
             this.notification?.add(this.state.dateError || "Rango de fechas inválido.", { type: "danger" });
             return;
         }
+        
         var self = this;
         let totals = {
             total_debit: this.state.total_debit,
@@ -230,7 +353,7 @@ class GeneralLedger extends owl.Component {
         });
     }
     gotoJournalEntry(ev) {
-        debugger;
+        
         return this.action.doAction({
             type: "ir.actions.act_window",
             res_model: "account.move",
@@ -240,7 +363,7 @@ class GeneralLedger extends owl.Component {
         });
     }
     gotoJournalItem(ev) {
-        debugger;
+        
         return this.action.doAction({
             type: "ir.actions.act_window",
             res_model: "account.move.line",
@@ -259,9 +382,9 @@ class GeneralLedger extends owl.Component {
     getDomain() {
         return [];
     }
-    async applyFilter(val, ev, is_delete = false) {
+    async applyFilter() {
         debugger;
-      
+
         this.state.account = null;
         this.state.account_data = null;
         this.state.account_total = null;
@@ -271,93 +394,45 @@ class GeneralLedger extends owl.Component {
         let account_total = "";
         let totalDebitSum = 0;
         let totalCreditSum = 0;
-      
-        const target = val?.target;
-        const dataValue = target?.getAttribute?.("data-value");
-        const inputName = target?.name;
-      
-        // 1) Actualizar date_range según el origen del evento
-        if (inputName === "start_date") {
-          this.state.date_range = {
-            ...(typeof this.state.date_range === "object" ? this.state.date_range : {}),
-            start_date: this.date_range_from.el?.value || "",
-          };
-        } else if (inputName === "end_date") {
-          this.state.date_range = {
-            ...(typeof this.state.date_range === "object" ? this.state.date_range : {}),
-            end_date: this.date_range_to.el?.value,
-          };
-        } else if (dataValue === "month" || dataValue === "year" || dataValue === "quarter" ||
-                   dataValue === "last-month" || dataValue === "last-year" || dataValue === "last-quarter") {
-          // Presets de rango: usar string y limpiar errores
-          this.state.date_range = dataValue;
-          this.state.dateError = null;
-          this.state.exportDisabled = false;
-        } else if (dataValue === "journal") {
-          const id = parseInt(target.getAttribute("data-id"), 10);
-          if (!target.classList.contains("selected-filter")) {
-            this.state.selected_journal_list.push(id);
-            target.classList.add("selected-filter");
-          } else {
-            this.state.selected_journal_list = this.state.selected_journal_list.filter((x) => x !== id);
-            target.classList.remove("selected-filter");
-          }
-        } else if (dataValue === "analytic") {
-          const id = parseInt(target.getAttribute("data-id"), 10);
-          if (!target.classList.contains("selected-filter")) {
-            this.state.selected_analytic_list.push(id);
-            target.classList.add("selected-filter");
-          } else {
-            this.state.selected_analytic_list = this.state.selected_analytic_list.filter((x) => x !== id);
-            target.classList.remove("selected-filter");
-          }
-        } else if (dataValue === "draft") {
-          if (target.classList.contains("selected-filter")) {
-            const { draft, ...rest } = this.state.options || {};
-            this.state.options = rest;
-            target.classList.remove("selected-filter");
-          } else {
-            this.state.options = { ...(this.state.options || {}), draft: true };
-            target.classList.add("selected-filter");
-          }
-        } else if (dataValue === "cash-basis") {
-          if (target.classList.contains("selected-filter")) {
-            // Volver a devengo
-            this.state.method = { accrual: true };
-            target.classList.remove("selected-filter");
-          } else {
-            // Pasar a caja
-            this.state.method = { cash: true };
-            target.classList.add("selected-filter");
-          }
-        } else if (dataValue === "account") {
-          const accountId = parseInt(target.getAttribute("data-id"), 10);
-          if (!target.classList.contains("selected-filter")) {
-            this.state.selected_account_list.push(accountId);
-            target.classList.add("selected-filter");
-          } else {
-            this.state.selected_account_list = this.state.selected_account_list.filter((x) => x !== accountId);
-            target.classList.remove("selected-filter");
-          }
-        }
-        this.state.selected_journal_list  = [...new Set(this.state.selected_journal_list)];
-        this.state.selected_analytic_list = [...new Set(this.state.selected_analytic_list)];
-        this.state.selected_account_list  = [...new Set(this.state.selected_account_list)];
 
-        // 2) Validación en vivo del rango personalizado (si aplica)
-        if (!this.validateDateRange()) { 
-          // Aviso y NO llamamos al servidor
-          this.notification?.add(this.state.dateError || "Rango de fechas inválido.", { type: "danger" });
-          this.render(true);
-          return;
+        // const target = val?.target;
+        // const dataValue = target?.getAttribute?.("data-value");
+        // const inputName = target?.name;
+
+        
+        this.state.selected_journal_list = [...new Set(this.state.selected_journal_list)];
+        this.state.selected_analytic_list = [...new Set(this.state.selected_analytic_list)];
+        this.state.selected_account_list = [...new Set(this.state.selected_account_list)];
+
+        // si la validación falla
+        if (typeof this.state.date_range === "object" && !this.validateDateRange()) {
+            this.notification?.add(this.state.dateError || "Rango de fechas inválido.", { type: "danger" });
+            this.render(true);
+            return;
         }
-        // --- 3) Preparar parámetros con fallbacks seguros ---
+
+        //  Preparar parámetros con fallbacks seguros 
         const journal_ids = Array.from(this.state.selected_journal_list || []);
-        const date_range  = this.state.date_range || null;      // string preset o {start_date,end_date}
-        const options     = this.state.options || {};           // el backend ya interpreta {} → posted
-        const analytic    = Array.from(this.state.selected_analytic_list || []);
-        const method      = this.state.method || { accrual: true };
-        const account_ids = (this.state.selected_account_rec || []).map((a) => a.id);
+        const rawDR = this.state.date_range || {};
+
+        const isEmptyDateRange =
+            typeof rawDR === "object" &&
+            (!rawDR.start_date || rawDR.start_date === "") &&
+            (!rawDR.end_date   || rawDR.end_date   === "");
+        const date_range = isEmptyDateRange ? null : rawDR;
+       
+        const options = this.state.options || {};           // el backend ya interpreta {} → posted
+        const analytic = Array.from(this.state.selected_analytic_list || []);
+        const method = this.state.method || { accrual: true };
+
+        //
+        const account_ids = (this.state.selected_account_list?.length
+            ? [...this.state.selected_account_list]
+            : (this.state.selected_account_rec || []).map((a) => a.id));
+        
+        debugger;
+        
+        
 
         // --- 4) Llamada al servidor ---
         const filtered_data = await this.orm.call(
@@ -367,24 +442,39 @@ class GeneralLedger extends owl.Component {
         );
 
         // (Opcional) refrescar catálogos si vienen en la respuesta
-        this.state.journals  = filtered_data.journal_ids  || this.state.journals;
+        this.state.journals = filtered_data.journal_ids || this.state.journals;
         this.state.analytics = filtered_data.analytic_ids || this.state.analytics;
-        this.state.accounts  = filtered_data.account_ids  || this.state.accounts;
+        this.state.accounts = filtered_data.account_ids || this.state.accounts;
+
+        const base = (this.state.accounts || []).filter(a => a && a.id != null);
+        this.state.all_accounts = [{ id: null, name: "ALL" }, ...base];
+        this.state.filteredAccounts = [{ id: null, name: "ALL" }, ...base];
+        // const q = (this.state.search || "").toLowerCase();
+
+        // const filteredLocal = q
+        //   ? base.filter(a =>
+        //       (a.name || "").toLowerCase().includes(q) ||
+        //       (a.code || "").toLowerCase().includes(q)
+        //     )
+        //   : base;
+
+        
 
         // --- 5) Procesar totales y líneas ---
         const account_totals = filtered_data.account_totals || {};
         for (const accTot of Object.values(account_totals)) {
-            totalDebitSum  += accTot?.total_debit  || 0;
+            totalDebitSum += accTot?.total_debit || 0;
             totalCreditSum += accTot?.total_credit || 0;
         }
 
         // Limpiar/normalizar estructura de líneas por cuenta
         const cleaned_account_data = {};
-        for (const [key, value] of Object.entries(filtered_data)) {
-            if (key === "account_totals" || key === "journal_ids" || key === "analytic_ids" || key === "account_ids") {
-                continue;
-            }
-            account_list.push(key);
+        for (const [key, value] of Object.entries(filtered_data)) 
+            
+            {
+            if (["account_totals","journal_ids","analytic_ids","account_ids"].includes(key)) continue;
+                account_list.push(key);
+            
             if (Array.isArray(value) && value.length) {
                 // value es lista de listas (cada move_line.read devuelve una lista)
                 const flat = value.flat(); // profundidad 1 basta
@@ -395,11 +485,11 @@ class GeneralLedger extends owl.Component {
         }
 
         account_list = [...new Set(account_list)];
-        this.state.currency     = (Object.values(account_totals)[0] || {}).currency_id || "";
-        this.state.account      = account_list;
+        this.state.currency = (Object.values(account_totals)[0] || {}).currency_id || "";
+        this.state.account = account_list;
         this.state.account_data = cleaned_account_data;
         this.state.account_total = account_totals;
-        this.state.total_debit  = totalDebitSum.toFixed(2);
+        this.state.total_debit = totalDebitSum.toFixed(2);
         this.state.total_credit = totalCreditSum.toFixed(2);
 
         // --- 6) Limpiar toggle de "desplegar todo" si estaba activo ---
@@ -410,7 +500,7 @@ class GeneralLedger extends owl.Component {
         // Redibujar
         this.render(true);
     }
-        
+
     async unfoldAll(ev) {
         debugger;
         if (!ev.target.classList.contains("selected-filter")) {
@@ -429,26 +519,32 @@ class GeneralLedger extends owl.Component {
         debugger;
         var self = this;
         let startDate, endDate;
-        let startYear, startMonth, startDay, endYear, endMonth, endDay;
-
+        let startMonth, startDay, startYear, endMonth, endDay, endYear;
+    
+        const pad = (n) =>String(n).padStart(2, "0");
         const parseLocal = (s) => {
-            if(!s) return null; 
-            const [y, m, d] = s.split("-").map(Number);
-            return new Date(y, m - 1, d);
+            if (!s) return null;
+            if (s.includes("-")) {
+                const [y, m, d] = s.split("-").map(Number);
+                return new Date(y, m - 1, d);
+            }
+            if (s.includes("/")){
+                const [d, m, y] = s.split("/").map(Number);
+                return new Date(y, m -1, d);
+            }
+            return new Date(s);
         };
-        const selectedJournalIDs = Array.from(self.state.selected_journal_list || []); 
-        const selectedJournalNames = selectedJournalIDs 
-          .map((journalID) =>{
-            const j = (self.state.journals || []).find((jj) => jj.id === journalID);
-            return j ? j.name : "";
-          })
-          .filter(Boolean); 
+
+        const selectedJournalIDs = Array.from(self.state.selected_journal_list || []);
+        const selectedJournalNames = selectedJournalIDs
+            .map((journalID) => {
+                const j = (self.state.journals || []).find((jj) => jj.id === journalID);
+                return j ? j.name : "";
+            })
+            .filter(Boolean);
         if (self.state.date_range) {
             const today = new Date();
-            if (self.state.date_range === "year") {
-                startDate = new Date(today.getFullYear(), 0, 1);
-                endDate = new Date(today.getFullYear(), 11, 31);
-            } else if (self.state.date_range === "quarter") {
+            if (self.state.date_range === "quarter") {
                 const currentQuarter = Math.floor(today.getMonth() / 3);
                 startDate = new Date(today.getFullYear(), currentQuarter * 3, 1);
                 endDate = new Date(today.getFullYear(), (currentQuarter + 1) * 3, 0);
@@ -458,24 +554,23 @@ class GeneralLedger extends owl.Component {
             } else if (self.state.date_range === "last-month") {
                 startDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
                 endDate = new Date(today.getFullYear(), today.getMonth(), 0);
-            } else if (self.state.date_range === "last-year") {
-                startDate = new Date(today.getFullYear() - 1, 0, 1);
-                endDate = new Date(today.getFullYear() - 1, 11, 31);
             } else if (self.state.date_range === "last-quarter") {
                 const lastQuarter = Math.floor((today.getMonth() - 3) / 3);
                 startDate = new Date(today.getFullYear(), lastQuarter * 3, 1);
                 endDate = new Date(today.getFullYear(), (lastQuarter + 1) * 3, 0);
             } else {
-                startDate = self.state.date_range.start_date ? parseLocal(self.state.date_range.start_date) : null; 
+                startDate = self.state.date_range.start_date ? parseLocal(self.state.date_range.start_date) : null;
                 endDate = self.state.date_range.end_date ? parseLocal(self.state.date_range.end_date) : null;
             }
             // Get the date components for start and end dates
+    
             if (startDate) {
                 startYear = startDate.getFullYear();
                 startMonth = startDate.getMonth() + 1;
                 startDay = startDate.getDate();
+                
             }
-            if (endDate) {
+            if (endDate) { 
                 endYear = endDate.getFullYear();
                 endMonth = endDate.getMonth() + 1;
                 endDay = endDate.getDate();
@@ -483,11 +578,11 @@ class GeneralLedger extends owl.Component {
         }
         const selectedAnalyticIDs = Array.from(self.state.selected_analytic_list || []);
         const selectedAnalyticNames = selectedAnalyticIDs
-        .map((analyticID) => {
-            const analytic = (self.state.analytics || []).find((a) => a.id === analyticID);
-            return analytic ? analytic.name : ""; 
-        })
-        .filter(Boolean); 
+            .map((analyticID) => {
+                const analytic = (self.state.analytics || []).find((a) => a.id === analyticID);
+                return analytic ? analytic.name : "";
+            })
+            .filter(Boolean);
 
         const filters = {
             journal: selectedJournalNames,
@@ -497,7 +592,7 @@ class GeneralLedger extends owl.Component {
             start_date: null,
             end_date: null,
         };
-        // Check if start and end dates are available before adding them to the filters object
+      
         if (
             startYear !== undefined &&
             startMonth !== undefined &&
@@ -506,18 +601,14 @@ class GeneralLedger extends owl.Component {
             endMonth !== undefined &&
             endDay !== undefined
         ) {
-            filters["start_date"] = `${startYear}-${
-                startMonth < 10 ? "0" : ""
-            }${startMonth}-${startDay < 10 ? "0" : ""}${startDay}`;
-            filters["end_date"] = `${endYear}-${endMonth < 10 ? "0" : ""}${endMonth}-${
-                endDay < 10 ? "0" : ""
-            }${endDay}`;
+            filters["start_date"] = `${pad(startDay)}/${pad(startMonth)}/${startYear}`;
+            filters["end_date"]   = `${pad(endDay)}/${pad(endMonth)}/${endYear}`;
         }
         return filters;
     }
 }
-GeneralLedger.defaultProps = {
-    resIds: [],
-};
-GeneralLedger.template = "gl_template_new";
-actionRegistry.add("gen_l", GeneralLedger);
+    GeneralLedger.defaultProps = {
+        resIds: [],
+    };
+    GeneralLedger.template = "gl_template_new";
+    actionRegistry.add("gen_l", GeneralLedger);

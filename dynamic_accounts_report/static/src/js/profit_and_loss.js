@@ -30,7 +30,8 @@ class ProfitAndLoss extends owl.Component {
         this.wizard_id =
             (await this.orm.call("dynamic.balance.sheet.report", "create", [{}])) |
             null;
-        this.load_data((self.initial_render = true));
+        // this.load_data((self.initial_render = true));
+        //no descomentar porque trae todo 
     }
     async load_data() {
         /**

@@ -161,7 +161,7 @@ class AgedPayable extends owl.Component {
         let partners = await this.orm.call("res.partner", "search_read", [
             [["supplier_rank", ">", 0]], // Solo proveedores
             ["id", "name"],
-        ]);
+        ]);        
         partners.unshift({id: null, name: "All"});
         this.state.all_partners = partners;
     }

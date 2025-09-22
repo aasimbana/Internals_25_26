@@ -235,7 +235,7 @@ msgid ""
 "<span style=\"font-weight: bolder; margin-left: 4%;\">\n"
 "                                        Unallocated Earnings\n"
 "                                    </span>"
-msgstr ""
+msgstr "Ganancias no asignadas"
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.balance_sheet
@@ -267,7 +267,7 @@ msgid ""
 "<span style=\"margin-left: 6%;\">Current\n"
 "                                        Earnings\n"
 "                                    </span>"
-msgstr ""
+msgstr "Ganancias actuales"
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.balance_sheet
@@ -629,7 +629,7 @@ msgstr "Informe del Libro Mayor"
 #: model:ir.model.fields,field_description:dynamic_accounts_report.field_dynamic_balance_sheet_report__id
 #: model:ir.model.fields,field_description:dynamic_accounts_report.field_tax_report__id
 msgid "ID"
-msgstr ""
+msgstr "ID"
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.trial_balance
@@ -772,7 +772,7 @@ msgstr "Ganancia y Perdida"
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.partner_ledger
 msgid "Ref"
-msgstr ""
+msgstr "Ref"
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.bank_book
