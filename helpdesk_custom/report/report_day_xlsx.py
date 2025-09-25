@@ -1,8 +1,7 @@
 # report/reporte_por_dia_xlsx.py
 import io
-import base64
 from datetime import datetime, time
-from odoo import models, fields, api
+from odoo import models
 from odoo.exceptions import UserError
 try:
     import xlsxwriter
@@ -13,78 +12,66 @@ class ReportePorDiaXlsx(models.AbstractModel):
     _name = "helpdesk.reporte.por.dia.xlsx"
     _description = "Reporte por Día - KPI Helpdesk"
 
-    def generate_reporte_por_dia_xlsx(self, wizard):
+    def generate_report_per_day_xlsx(self, wizard):
         if xlsxwriter is None:
             raise UserError("xlsxwriter no está disponible en el server")
 
-        # Estados que nos interesan
-        estados_interes = {
-            'closed': 'Cerrado',
-            'assigned': 'Asignado', 
-            'new': 'Nuevo'  # Los tickets nuevos tienen estado TEC_Espera
-        }
+        # 🔹 Recuperar estados dinámicamente por SQL (excepto 'new')
+        self.env.cr.execute("""
+            SELECT DISTINCT hs.stage_type 
+            FROM helpdesk_support hs 
+            WHERE hs.stage_type IN ('assigned', 'closed', 'new')
+            AND hs.stage_type IS NOT NULL
+            ORDER BY hs.stage_type ASC;
+        """)
+        resultados = self.env.cr.fetchall()
+        estados_interes = [row[0] for row in resultados if row[0] != 'new']
 
         # Empleados de soporte técnico
         empleados = wizard.employee_ids
         if not empleados:
-            empleados = self.env['hr.employee'].search([('soporte_tecnico', '=', True)])
+            empleados = self.env['hr.employee'].search([('technical_support', '=', True)])
         empleados = empleados.sorted(key=lambda r: r.name)
-
         user_ids = empleados.mapped('user_id.id')
-        
-        # Construir domain para UN SOLO DÍA
+
+        # Construir domain para UN SOLO DÍA (assigned y closed)
         domain = [('company_id', '=', wizard.company_id.id)]
-        
         if wizard.date_start:
             domain.append(('create_date', '>=', datetime.combine(wizard.date_start, time.min)))
             domain.append(('create_date', '<=', datetime.combine(wizard.date_start, time.max)))
-
         domain.append(('user_id', 'in', user_ids))
-        
+
         tickets = self.env['helpdesk.support'].search(domain)
 
         # Inicializar conteos
-        conteo = {}
-        total_cerrados = 0
-        total_nuevos = 0  # Contador total de tickets nuevos
-                
-        for estado_code in estados_interes.keys():
-            conteo[estado_code] = {emp.name: 0 for emp in empleados}
+        conteo = {estado: {emp.name: 0 for emp in empleados} for estado in estados_interes}
+        total_cerrados = 0  # Solo tickets closed
 
-        # Contar tickets
         for ticket in tickets:
             tecnico_name = ticket.user_id.employee_id.name if ticket.user_id.employee_id else 'Sin asignar'
-            estado_actual = ticket.stage_id.name if ticket.stage_id else None
-            
-            # Determinar el tipo de estado según nuestra clasificación
-            estado_code = None
-            if estado_actual == 'new':
-                estado_code = 'new'  # Tickets nuevos
-            elif estado_actual in ['TEC_Asignación_Técnico', 'TEC_Ticket_Progreso', 'TEC_Supervisores', 
-                                 'TEC_Soporte a PRG', 'PRG_Asignado_(Proceso_PRG)', 'COTIZACION_PRG',
-                                 'PRG_Validación_TEC', 'MEJORAS EN PROCESOS']:
-                estado_code = 'assigned'  # Tickets asignados/en proceso
-            elif estado_actual == 'TEC_Cerrado':
-                estado_code = 'closed'  # Tickets cerrados
+            estado_actual = ticket.stage_type if ticket.stage_type else "Sin Estado"
 
-            # Solo contar estados que nos interesan
-            if estado_code not in estados_interes:
-                continue
+            if estado_actual != 'new':  # assigned y closed para conteo por técnico
+                if estado_actual not in conteo:
+                    conteo[estado_actual] = {emp.name: 0 for emp in empleados}
+                if tecnico_name not in conteo[estado_actual]:
+                    conteo[estado_actual][tecnico_name] = 0
+                conteo[estado_actual][tecnico_name] += 1
 
-            # Para tickets NUEVOS (TEC_Espera): contar en total pero NO por técnico
-            if estado_code == "new":
-                total_nuevos += 1
-                continue  # Saltar el conteo por técnico para nuevos
+                # Solo sumamos los cerrados al total general
+                if estado_actual == 'closed':
+                    total_cerrados += 1
 
-            # Para tickets ASIGNADOS y CERRADOS: contar por técnico
-            if tecnico_name not in conteo[estado_code]:
-                conteo[estado_code][tecnico_name] = 0
-
-            conteo[estado_code][tecnico_name] += 1
-            
-            # Contar solo CERRADOS para el total general
-            if estado_code == "closed":
-                total_cerrados += 1
+        # 🔹 Obtener tickets nuevos del día mediante SQL
+        total_nuevos = 0
+        if wizard.date_start:
+            self.env.cr.execute("""
+                SELECT COUNT(*) 
+                FROM helpdesk_support 
+                WHERE stage_type = 'new' 
+                AND DATE(create_date) = %s;
+            """, (wizard.date_start,))
+            total_nuevos = self.env.cr.fetchone()[0] or 0
 
         # Crear Excel
         output = io.BytesIO()
@@ -93,76 +80,60 @@ class ReportePorDiaXlsx(models.AbstractModel):
 
         # Formatos
         header_format = workbook.add_format({
-            'bold': True, 
-            'bg_color': '#366092', 
-            'font_color': 'white',
-            'align': 'center',
-            'border': 1
+            'bold': True, 'bg_color': '#366092', 'font_color': 'white',
+            'align': 'center', 'border': 1
         })
-        
         tecnico_format = workbook.add_format({
-            'bold': True,
-            'bg_color': '#E6E6E6',
-            'border': 1
+            'bold': True, 'bg_color': '#E6E6E6', 'border': 1
         })
-        
         numero_format = workbook.add_format({
-            'align': 'center',
-            'border': 1
+            'align': 'center', 'border': 1
         })
-        
         total_format = workbook.add_format({
-            'bold': True,
-            'bg_color': '#FFCC00',
-            'align': 'center',
-            'border': 1
+            'bold': True, 'bg_color': '#FFCC00', 'align': 'center', 'border': 1
         })
-        
         nuevos_format = workbook.add_format({
-            'bold': True,
-            'bg_color': '#FF9999',
-            'align': 'center',
-            'border': 1
+            'bold': True, 'bg_color': '#FF9999', 'align': 'center', 'border': 1
         })
 
-        # Título - Solo un día
+        # Título
         fecha_reporte = wizard.date_start.strftime("%d/%m/%Y") if wizard.date_start else "Fecha no especificada"
-        
         worksheet.merge_range('A1:D1', 'REPORTE POR DÍA - HELP DESK', header_format)
         worksheet.merge_range('A2:D2', f'Fecha: {fecha_reporte}', workbook.add_format({'align': 'center'}))
 
-        # Cabecera de tabla
+        # Cabecera dinámica
         worksheet.write(2, 0, "TÉCNICO", header_format)
-        worksheet.write(2, 1, "CERRADOS", header_format)
-        worksheet.write(2, 2, "ASIGNADOS", header_format)
-        worksheet.write(2, 3, "NUEVOS", header_format)
+        col = 1
+        for estado in estados_interes:
+            worksheet.write(2, col, estado.upper(), header_format)
+            col += 1
+        worksheet.write(2, col, "NEW", header_format)
 
-        # Datos por técnico (solo cerrados y asignados)
+        # Datos por técnico (columna NEW vacía)
         row = 3
         for emp in empleados:
             worksheet.write(row, 0, emp.name, tecnico_format)
-            worksheet.write_number(row, 1, conteo['closed'].get(emp.name, 0), numero_format)
-            worksheet.write_number(row, 2, conteo['assigned'].get(emp.name, 0), numero_format)
-            worksheet.write(row, 3, "", numero_format)  # Dejar vacío para nuevos
+            c = 1
+            for estado in estados_interes:
+                worksheet.write_number(row, c, conteo[estado].get(emp.name, 0), numero_format)
+                c += 1
+            worksheet.write(row, col, "-", numero_format)
             row += 1
 
-        # FILA ESPECIAL PARA TICKETS NUEVOS (TEC_Espera - SIN ASIGNAR)
-        worksheet.write(row, 0, "TICKETS NUEVOS (TEC_Espera)", tecnico_format)
-        worksheet.write(row, 1, "", numero_format)  # Vacío para cerrados
-        worksheet.write(row, 2, "", numero_format)  # Vacío para asignados
-        worksheet.write_number(row, 3, total_nuevos, nuevos_format)
-        row += 1
+        # Fila combinada para NEW
+        worksheet.merge_range(3, col, row-1, col, total_nuevos, nuevos_format)
 
-        # TOTAL GENERAL - Solo tickets CERRADOS
-        worksheet.merge_range(row, 0, row, 2, "TOTAL GENERAL (CERRADOS)", total_format)
-        worksheet.write_number(row, 3, total_cerrados, total_format)
+        # TOTAL GENERAL (solo cerrados)
+        row_total = row
+        worksheet.merge_range(row_total, 0, row_total, col-1, "TOTAL CERRADOS", total_format)
+        worksheet.write_number(row_total, col, total_cerrados, total_format)
 
-        # Ajustar anchos de columna
+        # Ajustar anchos
         worksheet.set_column('A:A', 25)
-        worksheet.set_column('B:D', 12)
+        worksheet.set_column('B:Z', 15)
 
         # Fecha de generación
-        worksheet.write(row + 2, 0, f"Generado el: {datetime.now().strftime('%d/%m/%Y %H:%M')}")
+        worksheet.write(row_total + 2, 0, f"Generado el: {datetime.now().strftime('%d/%m/%Y %H:%M')}")
 
         workbook.close()
         output.seek(0)

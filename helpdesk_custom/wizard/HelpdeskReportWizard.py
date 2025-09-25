@@ -4,23 +4,23 @@ from datetime import datetime, time
 
 class HelpdeskReportWizard(models.TransientModel):
     _name = "helpdesk.report.wizard"
-    _description = "Wizard de Reporte Helpdesk"
+    _description = "Helpdesk Report Wizard"
 
-    date_start = fields.Date(string="Fecha Inicio")
-    date_end = fields.Date(string="Fecha Fin")
+    date_start = fields.Date(string="start date")
+    date_end = fields.Date(string="end date")
     company_id = fields.Many2one(
         "res.company",
-        string="Empresa",
+        string="company",
         default=lambda self: self.env.company.id
     )
     employee_ids = fields.Many2many(
         "hr.employee",
-        string="Empleados de Soporte",
-        domain=[("soporte_tecnico", "=", True)]
+        string="employees support",
+        domain=[("technical_support", "=", True)]
     )
 
     def action_generate_excel(self):
-        """Genera el XLSX y devuelve una acción para descargarlo."""
+        """ Generate Excel """
         self.ensure_one()
         helper = self.env['helpdesk.report.xlsx.helper']
         xlsx_data = helper.generate_helpdesk_report_xlsx(self)
@@ -42,20 +42,7 @@ class HelpdeskReportWizard(models.TransientModel):
         }
     
     def action_generate_pdf(self):
+        """ Generate PDF """
         return self.env.ref("helpdesk_custom.action_report_helpdesk_pdf").report_action(self)
 
-    @api.model
-    def open_helpdesk_report_wizard(self):
-        settings = self.env['res.config.settings'].sudo().get_values()
-        allowed_user = settings.get('only_user_id')
-        if allowed_user and self.env.user.id != allowed_user:
-            return False  # o lanzar UserError
-        return {
-        'name': 'Reportes de Helpdesk',
-        'type': 'ir.actions.act_window',
-        'res_model': 'helpdesk.report.wizard',
-        'view_mode': 'form',
-        'view_id': self.env.ref('helpdesk_custom.view_helpdesk_report_wizard_form').id,
-        'target': 'new',
-    }
 

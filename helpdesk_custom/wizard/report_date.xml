@@ -15,7 +15,7 @@
                 </group>
   
                 <footer>
-                  <!-- <button string="Generar PDF" type="object" name="action_generate_pdf" class="btn-primary"/> -->
+                  <button string="Generar PDF" type="object" name="action_generate_day_report_pdf" class="btn-primary"/>
                   <button string="Generar Excel" type="object" name="action_generate_reporte_dia" class="btn-primary"/>
                   <button string="Cancelar" class="btn-secondary" special="cancel"/>           
                 </footer>
