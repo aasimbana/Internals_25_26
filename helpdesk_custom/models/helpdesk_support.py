@@ -22,8 +22,8 @@ class HelpdeskSupport(models.Model):
 
         if incomplete_tasks:
             raise UserError(
-                _("No puedes cerrar: las siguientes tareas no están terminadas: %s")
-                % ", ".join(incomplete_tasks[:10])  # opcional limitar a 10 tareas
+                _("You cannot close: the following tasks are not finished: %s")
+                % ", ".join(incomplete_tasks[:10]) 
             )
         return super(HelpdeskSupport, self).set_to_close()
 
@@ -34,6 +34,6 @@ class HelpdeskSupport(models.Model):
             'res_model': 'helpdesk.report.wizard',
             'view_mode': 'form',
             'view_id': self.env.ref('helpdesk_custom.view_helpdesk_report_wizard_form').id,
-            'target': 'new',        # hace que sea modal (pequeño)
+            'target': 'new',        
         }
  

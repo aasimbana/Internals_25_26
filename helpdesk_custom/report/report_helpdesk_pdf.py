@@ -1,5 +1,6 @@
 from datetime import datetime, time
 from odoo import models, fields
+import json
 
 class HelpdeskReportPdf(models.AbstractModel):
     _name = "report.helpdesk_custom.report_helpdesk_pdf"
@@ -8,27 +9,50 @@ class HelpdeskReportPdf(models.AbstractModel):
     def _get_report_values(self, docids, data=None):
         wizard = self.env['helpdesk.report.wizard'].browse(docids)
 
-        # Estados fijos
-        estados = [
-            "TEC_Espera",
-            "TEC_Asignación_Técnico",
-            "TEC_Ticket_Progreso",
-            "TEC_Supervisores",
-            "TEC_Soporte a PRG",
-            "PRG_Asignado_(Proceso_PRG)",
-            "COTIZACION_PRG",
-            "PRG_Validación_TEC",
-            "MEJORAS EN PROCESOS",
-            "TEC_Cerrado",
-        ]
+        try:
+            query = "SELECT name FROM helpdesk_stage_config WHERE name IS NOT NULL"
+            self.env.cr.execute(query)
+            results = self.env.cr.fetchall()
 
-        # Empleados
+            estados_unique = []
+            for row in results:
+                name_value = row[0]
+
+                stage_dict = None
+                
+                if isinstance(name_value, str):
+                    try:
+                        stage_dict = json.loads(name_value)
+                    except json.JSONDecodeError:
+                        stage_dict = {"es_EC": name_value, "en_US": name_value}
+                
+                elif isinstance(name_value, dict):
+                    stage_dict = name_value
+        
+                else:
+                    stage_dict = {"es_EC": str(name_value), "en_US": str(name_value)}
+
+                valor_es = stage_dict.get('es_EC')
+                valor_en = stage_dict.get('en_US')
+                estado_valor = valor_es or valor_en
+                if estado_valor:
+                    estados_unique.append(estado_valor)
+
+            
+            estados = list(dict.fromkeys(estados_unique))
+
+        except Exception:
+            raise ValueError(
+                "No se pudieron obtener los estados desde la base de datos, se usará la lista por defecto"
+            ) from e
+
+     
         empleados = wizard.employee_ids
         if not empleados:
-            empleados = self.env['hr.employee'].search([('soporte_tecnico', '=', True)])
+            empleados = self.env['hr.employee'].search([('technical_support', '=', True)])
         empleados = empleados.sorted(key=lambda r: r.name)
 
-        # Domain de tickets
+        # Domain the tickets
         domain = [('company_id', '=', wizard.company_id.id)]
         if wizard.date_start:
             domain.append(('create_date', '>=', datetime.combine(wizard.date_start, time.min)))
@@ -39,13 +63,13 @@ class HelpdeskReportPdf(models.AbstractModel):
         domain.append(('user_id', 'in', user_ids))
         tickets = self.env['helpdesk.support'].search(domain)
 
-        # Conteo
+        
         conteo = {estado: {emp.name: 0 for emp in empleados} for estado in estados}
         total_por_tecnico = {emp.name: 0 for emp in empleados}
         total_general = 0
 
         for ticket in tickets:
-            tecnico_name = ticket.user_id.employee_id.name if ticket.user_id.employee_id else 'Sin asignar'
+            tecnico_name = ticket.user_id.employee_id.name if ticket.user_id and ticket.user_id.employee_id else 'Sin asignar'
             estado_code = ticket.stage_id.name if ticket.stage_id else 'Sin Estado'
             if estado_code not in estados:
                 estado_code = 'Sin Estado'
@@ -65,7 +89,6 @@ class HelpdeskReportPdf(models.AbstractModel):
         fecha_fin = wizard.date_end.strftime("%d/%m/%Y") if wizard.date_end else "N/A"
         fecha_generacion = datetime.now().strftime("%d/%m/%Y %H:%M")
 
-
         return {
             'doc_ids': docids,
             'doc_model': 'helpdesk.report.wizard',
@@ -75,8 +98,6 @@ class HelpdeskReportPdf(models.AbstractModel):
                 'conteo': conteo,
                 'total_por_tecnico': total_por_tecnico,
                 'total_general': total_general,
-                'fecha_inicio': fecha_inicio,
-                'fecha_fin': fecha_fin,
                 'fecha_inicio': fecha_inicio,
                 'fecha_fin': fecha_fin,
                 'fecha_generacion': fecha_generacion,

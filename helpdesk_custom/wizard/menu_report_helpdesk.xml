@@ -26,6 +26,21 @@
         action="helpdesk_report_date_action"
     />
 
+    <menuitem
+        id="menu_company_report"
+        name="Company Report"
+        sequence="3"
+        parent="helpdesk_reports"
+        action="helpdesk_report_company_action"
+    />
+    <menuitem
+        id="menu_general_report"
+        name="General Report"
+        sequence="4"
+        parent="helpdesk_reports"
+        action="helpdesk_report_general_action"
+    />
+
 
 
 </odoo>

@@ -1,0 +1,21 @@
+<odoo>
+   
+    <record id="paperformat_status_report_landscape" model="report.paperformat">
+        <field name="name">Status Report Landscape</field>
+        <field name="default">False</field>
+        <field name="format">A4</field>
+        <field name="orientation">Landscape</field>
+        <field name="margin_top">35</field>
+        <field name="margin_bottom">10</field>
+        <field name="margin_left">10</field>
+        <field name="margin_right">10</field>
+    </record>
+
+    <record id="action_report_status_helpdesk_pdf" model="ir.actions.report">
+        <field name="name">Status Report PDF</field>
+        <field name="model">helpdesk.report.status</field> 
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">helpdesk_custom.report_status_template</field>
+        <field name="report_file">helpdesk_custom.report_status_template</field>
+    </record>
+</odoo>

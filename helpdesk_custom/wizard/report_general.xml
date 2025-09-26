@@ -1,0 +1,33 @@
+<odoo>
+    <record id="view_helpdesk_report_general_form" model="ir.ui.view">
+        <field name="name">helpdesk.report.general.form</field>
+        <field name="model">helpdesk.report.general</field>
+        <field name="arch" type="xml">
+            <form string="Reportes de Helpdesk">
+                <group>
+                    <group>
+                        <field name="company_id" readonly="1" help="Select the company for which you want to generate the report."/>
+                    </group>
+                    <group>
+                        <field name="date_start"/>
+                        <field name="date_end"/>
+                    </group>    
+                </group>
+                
+                <footer>
+                  <button string="Generar PDF" type="object" name="action_generate_pdf_general" class="btn-primary"/>
+                  <button string="Generate Excel" type="object" name="generate_xlsx_report_general" class="btn-primary"/>
+                  <button string="Cancel" class="btn-secondary" special="cancel"/>           
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="helpdesk_report_general_action" model="ir.actions.act_window">
+        <field name="name">Report general</field>
+        <field name="res_model">helpdesk.report.general</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="helpdesk_custom.view_helpdesk_report_general_form"/>
+        <field name="target">new</field>
+    </record>
+</odoo>
