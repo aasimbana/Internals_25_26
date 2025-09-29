@@ -5,22 +5,22 @@ class HelpdeskReportDate(models.TransientModel):
     _name = 'helpdesk.report.date'
     _description = 'Helpdesk Report Date Wizard'
     
-    date_start = fields.Date(string='Fecha Inicio')
+    date_start = fields.Date(string='Start Date')
     company_id = fields.Many2one(
         "res.company",
-        string="Empresa",
+        string="Company",
         default=lambda self: self.env.company.id
     )
     employee_ids = fields.Many2many(
         "hr.employee",
-        string="Empleados de Soporte",
-        domain=[("soporte_tecnico", "=", True)]
+        string="Support Employees",
+        domain=[("technical_support", "=", True)]
     )
 
     # En tu wizard helpdesk_report_date.py
     def action_generate_reporte_dia(self):
         report_helper = self.env['helpdesk.reporte.por.dia.xlsx']
-        excel_data = report_helper.generate_reporte_por_dia_xlsx(self)
+        excel_data = report_helper.generate_report_per_day_xlsx(self)
         
         # Crear attachment
         attachment = self.env['ir.attachment'].create({
@@ -36,3 +36,9 @@ class HelpdeskReportDate(models.TransientModel):
             'url': f'/web/content/{attachment.id}?download=true',
             'target': 'self',
         }
+    def action_generate_day_report_pdf(self):
+        self.ensure_one()
+        if not self.exists():
+            raise UserError("The assistant has expired, open it again.")
+        return self.env.ref("helpdesk_custom.action_report_day_helpdesk_pdf").report_action(self)
+  

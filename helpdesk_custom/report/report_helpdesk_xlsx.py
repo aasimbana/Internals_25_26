@@ -1,4 +1,4 @@
-# helpdesk_custom/report/report_helpdesk_xlsx.py
+
 import io
 import json
 from datetime import datetime, time
@@ -17,79 +17,59 @@ class HelpdeskReportXlsx(models.AbstractModel):
         if xlsxwriter is None:
             raise UserError("xlsxwriter no está disponible en el server")
 
-        # Lista de estados que nos interesan (nombres exactos como están en la BD)
-        target_stages = [
-            'TEC_Espera',
-            'TEC_Asignación_Técnico',
-            'TEC_Ticket_Progress',
-            'TEC_Supervisores',
-            'TEC_Soporte a PRG',
-            'PRG_Asignado_(Processo_PRG)',
-            'COTIZACION_PRG',
-            'PRG_Validación_TEC',
-            'MEJORAS EN PROCESOS',
-            'TEC_Cerrado'
-        ]
+        # CONSULTA SQL DIRECTA PARA OBTENER LOS NOMBRES DE LOS ESTADOS
+        try:
+            query = """
+                SELECT name 
+                FROM helpdesk_stage_config 
+                WHERE name IS NOT NULL 
+            """
+            self.env.cr.execute(query)
+            results = self.env.cr.fetchall()
+            
+            estados_unique = []
 
-        # 1. Recuperar TODOS los registros de helpdesk.stage.config
-        all_stages = self.env['helpdesk.stage.config'].search([])
+            for row in results:
+                name_value = row[0]
+                
+                stage_dict = None
+                # Caso 1: es string, intentar parsear JSON
+                if isinstance(name_value, str):
+                    try:
+                        stage_dict = json.loads(name_value)
+                    except json.JSONDecodeError:
+                        # No es JSON, tratar como string simple
+                        stage_dict = {"es_EC": name_value, "en_US": name_value}
+                # Caso 2: ya es dict
+                elif isinstance(name_value, dict):
+                    stage_dict = name_value
+                # Caso 3: otro tipo (None, int...), convertir a string
+                else:
+                    stage_dict = {"es_EC": str(name_value), "en_US": str(name_value)}
 
-        # 2. Lista auxiliar para filtrar los estados válidos - USANDO EL CAMPO NAME
-        estados_validos = []
-        estados_records_validos = []
+                # Extraer valor en español o inglés
+                valor_es = stage_dict.get('es_EC')
+                valor_en = stage_dict.get('en_US')
+                estado_valor = valor_es or valor_en
+                if estado_valor:
+                    estados_unique.append(estado_valor)
 
-        for stage in all_stages:
-            try:
-                # Verificar si NAME existe y es un string (no stage_type)
-                if stage.name:
-                    # Si es string, intentar convertirlo a dict
-                    if isinstance(stage.name, str):
-                        # Manejar casos especiales primero
-                        if stage.name.strip() in ['', 'new', '{}', 'null']:
-                            continue
-                        
-                        # Intentar convertir el string a dict (JSON)
-                        try:
-                            stage_dict = json.loads(stage.name)
-                        except (json.JSONDecodeError, TypeError):
-                            # Si no es JSON válido, saltar este registro
-                                continue
-                    else:
-                        # Si ya es un dict (puede pasar en algunos casos)
-                        stage_dict = stage.name
-                    
-                    # Extraer valores en español e inglés DEL CAMPO NAME
-                    valor_es = stage_dict.get('es_EC') or stage_dict.get('es')
-                    valor_en = stage_dict.get('en_US') or stage_dict.get('en')
-                    
-                    # Verificar si alguno de los valores está en nuestra lista target
-                    if valor_es in target_stages or valor_en in target_stages:
-                        estado_valor = valor_es or valor_en
-                        estados_validos.append(estado_valor)
-                        estados_records_validos.append(stage)
-                        
-            except Exception as e:
-                # Si hay algún error con este registro, continuar con el siguiente
-                continue
+            # Eliminar duplicados y mantener orden
+            estados_unique = list(dict.fromkeys(estados_unique))
 
-        # 3. Eliminar duplicados y ordenar
-        estados_unique = list(dict.fromkeys(estados_validos))  # Mantener orden
-        estados_records = estados_records_validos
+        except Exception as e:
+            # Si falla la consulta SQL, usar lista por defecto
+            raise ValueError(
+                "No se pudieron obtener los estados desde la base de datos, se usará la lista por defecto"
+            ) from e
 
-        # 4. Si no encontramos estados, usar los target_stages directamente
-        # if not estados_records:
-        #     estados_unique = target_stages
 
-        # 5. USAR LOS NOMBRES ORIGINALES SIN MAPEO
+        # USAR LOS NOMBRES OBTENIDOS
         estados = estados_unique
         
-        # Agregar "Sin Estado" si no está en la lista
-        # if 'Sin Estado' not in estados:
-        #     estados.append('Sin Estado')
-
         empleados = wizard.employee_ids
         if not empleados:
-            empleados = self.env['hr.employee'].search([('soporte_tecnico','=',True)])
+            empleados = self.env['hr.employee'].search([('technical_support','=',True)])
 
         empleados = empleados.sorted(key=lambda r: r.name)
 
@@ -103,7 +83,7 @@ class HelpdeskReportXlsx(models.AbstractModel):
         domain.append(('user_id', 'in', user_ids))
         tickets = self.env['helpdesk.support'].search(domain)
 
-        # INICIALIZAR CONTEO COMO EN EL PDF - CORREGIDO
+        # INICIALIZAR CONTEO
         conteo = {}
         total_por_tecnico = {}
         total_general = 0
@@ -118,7 +98,7 @@ class HelpdeskReportXlsx(models.AbstractModel):
         for emp in empleados:
             total_por_tecnico[emp.name] = 0
 
-        # CONTAR TICKETS CON LA LÓGICA DEL PDF - CORREGIDO
+        # CONTAR TICKETS
         for ticket in tickets:
             tecnico_name = ticket.user_id.employee_id.name if ticket.user_id and ticket.user_id.employee_id else 'Sin asignar'
             estado_code = ticket.stage_id.name if ticket.stage_id else 'Sin Estado'
@@ -158,7 +138,7 @@ class HelpdeskReportXlsx(models.AbstractModel):
         total_general_format = workbook.add_format({'bold': True, 'bg_color': '#FFC000', 'align': 'center'})
 
         # Obtener todos los técnicos (empleados seleccionados + 'Sin asignar')
-        todos_tecnicos = list(empleados.mapped('name')) + ['Sin asignar']
+        todos_tecnicos = list(empleados.mapped('name'))
         todos_tecnicos = list(dict.fromkeys(todos_tecnicos))  # Eliminar duplicados
         todos_tecnicos.sort()
 

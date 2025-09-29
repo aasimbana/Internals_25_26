@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Paperformat -->
+    <record id="paperformat_general_report_landscape" model="report.paperformat">
+        <field name="name">General Report Landscape A4</field>
+        <field name="default" eval="False"/>
+        <field name="format">A4</field>
+        <field name="orientation">Landscape</field>
+        <field name="margin_top">15</field>
+        <field name="margin_bottom">15</field>
+        <field name="margin_left">10</field>
+        <field name="margin_right">10</field>
+    </record>
+
+    <!-- Acción del reporte -->
+    <record id="action_report_general_helpdesk_pdf" model="ir.actions.report">
+        <field name="name">General Report PDF</field>
+        <field name="model">helpdesk.report.general</field> 
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">helpdesk_custom.general_report_template</field>
+        <field name="report_file">helpdesk_custom.general_report_template</field>
+    </record>
+</odoo>
