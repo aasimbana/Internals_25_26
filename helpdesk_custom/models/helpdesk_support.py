@@ -29,7 +29,7 @@ class HelpdeskSupport(models.Model):
 
     def open_helpdesk_report_wizard(self):
         return {
-            'name': 'Reportes de Helpdesk',
+            'name': 'Helpdesk Reports',
             'type': 'ir.actions.act_window',
             'res_model': 'helpdesk.report.wizard',
             'view_mode': 'form',

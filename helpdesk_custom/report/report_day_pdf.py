@@ -27,8 +27,8 @@ class DailyReportPdf(models.AbstractModel):
         domain = [('company_id', '=', wizard.company_id.id),
                 ('user_id', 'in', user_ids)]
         if wizard.date_start:
-            domain += [('create_date', '>=', datetime.combine(wizard.date_start, time.min)),
-                    ('create_date', '<=', datetime.combine(wizard.date_start, time.max))]
+            domain += [('close_date', '>=', datetime.combine(wizard.date_start, time.min)),
+                    ('close_date', '<=', datetime.combine(wizard.date_start, time.max))]
         tickets = self.env['helpdesk.support'].search(domain)
 
         # Initialize counts

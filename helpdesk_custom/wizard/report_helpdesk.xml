@@ -3,7 +3,7 @@
       <field name="name">helpdesk.report.wizard.form</field>
       <field name="model">helpdesk.report.wizard</field>
       <field name="arch" type="xml">
-          <form string="Reportes de Helpdesk">
+          <form string="Helpdesk Reports">
               <group>
                   <group>
                       <field name="date_start"/>
@@ -11,21 +11,21 @@
                   </group>
                   <group>
                       <field name="company_id" readonly="1"/>
-                      <field name="employee_ids" widget="many2many_tags" readonly="1"/>
+                      <field name="employee_ids" widget="many2many_tags" readonly="0"/>
                   </group>
               </group>
 
               <footer>
-                <button string="Generar PDF" type="object" name="action_generate_pdf" class="btn-primary"/>
-                <button string="Generar Excel" type="object" name="action_generate_excel" class="btn-primary"/>
-                <button string="Cancelar" class="btn-secondary" special="cancel"/>           
+                <button string="Generate PDF" type="object" name="action_generate_pdf" class="btn-primary"/>
+                <button string="Generate Excel" type="object" name="action_generate_excel" class="btn-primary"/>
+                <button string="Cancel" class="btn-secondary" special="cancel"/>           
               </footer>
           </form>
       </field>
   </record>
 
   <record id="helpdesk_report_wizard_action" model="ir.actions.act_window">
-      <field name="name">Reporte de Helpdesk</field>
+      <field name="name">Helpdesk Reports</field>
       <field name="res_model">helpdesk.report.wizard</field>
       <field name="view_mode">form</field>
       <field name="view_id" ref="helpdesk_custom.view_helpdesk_report_wizard_form"/>

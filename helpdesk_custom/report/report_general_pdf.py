@@ -7,17 +7,14 @@ class GeneralReportPdf(models.AbstractModel):
     _description = "General Helpdesk Report by Date (PDF)"
 
     def _get_report_values(self, docids, data=None):
-        # Get wizard record
         wizard = self.env['helpdesk.report.general'].browse(docids)
 
-        # Validate date range
         if not wizard.date_start or not wizard.date_end:
             raise UserError("You must select a start and end date in the wizard.")
 
         start_date = datetime.combine(wizard.date_start, time.min)
         end_date = datetime.combine(wizard.date_end, time.max)
 
-        #  Get all unique ticket states
         self.env.cr.execute("""
             SELECT DISTINCT stage_type 
             FROM helpdesk_support 
@@ -28,37 +25,38 @@ class GeneralReportPdf(models.AbstractModel):
         if not stage_types:
             raise UserError("No valid ticket states found in the database.")
 
-        # Get company
         company = self.env['res.company'].search([('name', '=', 'ADSSOFTWARE CIA LTDA')], limit=1)
         if not company:
             raise UserError("Company 'ADSSOFTWARE CIA LTDA' not found.")
 
-        # Search tickets by request_date
         tickets = self.env['helpdesk.support'].search([
-            ('request_date', '>=', start_date),
-            ('request_date', '<=', end_date),
             ('company_id', '=', company.id),
             ('active', '=', True),
             ('stage_type', '!=', False),
         ])
 
         if not tickets:
-            raise UserError("No tickets found in the specified date range for ADSSOFTWARE CIA LTDA.")
+            raise UserError("No tickets found for ADSSOFTWARE CIA LTDA.")
 
-        #  Build daily data grouped by date and state
         daily_data = {}
         total_by_state = {state: 0 for state in stage_types}
         grand_total = 0
 
         for ticket in tickets:
-            # Skip closed tickets that are not marked as closed
-            if ticket.stage_type == "closed" and not ticket.is_close:
-                continue
+            if ticket.stage_type == "closed":
+                if not ticket.close_date:
+                    continue
+                if not (start_date <= ticket.close_date <= end_date):
+                    continue
+                date_value = ticket.close_date
+            else:
+                if not ticket.request_date:
+                    continue
+                if not (start_date <= ticket.request_date <= end_date):
+                    continue
+                date_value = ticket.request_date
 
-            if not ticket.request_date:
-                continue
-
-            date_str = ticket.request_date.date().strftime("%d/%m/%Y")
+            date_str = date_value.date().strftime("%d/%m/%Y")
             state = ticket.stage_type
 
             if date_str not in daily_data:
@@ -68,7 +66,6 @@ class GeneralReportPdf(models.AbstractModel):
             total_by_state[state] += 1
             grand_total += 1
 
-        # Create structured list for QWeb rendering
         rows = []
         for date_str in sorted(daily_data.keys(), key=lambda d: datetime.strptime(d, "%d/%m/%Y")):
             total_day = sum(daily_data[date_str].values())
@@ -78,7 +75,6 @@ class GeneralReportPdf(models.AbstractModel):
                 "total": total_day
             })
 
-        #  Return context data to the QWeb template
         return {
             "doc_ids": docids,
             "doc_model": "helpdesk.report.date",

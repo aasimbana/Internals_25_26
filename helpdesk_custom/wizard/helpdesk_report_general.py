@@ -33,7 +33,7 @@ class HelpdeskReportGeneral(models.TransientModel):
 
         # Guardar archivo en ir.attachment
         import base64
-        filename = "reporte_helpdesk_septiembre_2025.xlsx"
+        filename = "reporte_helpdesk_general.xlsx"
         attachment = self.env["ir.attachment"].create({
             "name": filename,
             "type": "binary",

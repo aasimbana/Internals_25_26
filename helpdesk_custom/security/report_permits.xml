@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='utf-8' ?>
 <odoo>
     <record id="group_report_helpdesk" model="res.groups">
-        <field name="name">Reportar Helpdesk</field>
+        <field name="name">Help desk reports</field>
     </record>
 </odoo>

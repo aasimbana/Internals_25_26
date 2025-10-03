@@ -3,7 +3,7 @@
         <field name="name">helpdesk.report.date.form</field>
         <field name="model">helpdesk.report.date</field>
         <field name="arch" type="xml">
-            <form string="Reportes de Helpdesk">
+            <form string="Daily Reports">
                 <group>
                     <group>
                         <field name="date_start"/>
@@ -24,7 +24,7 @@
     </record>
   
     <record id="helpdesk_report_date_action" model="ir.actions.act_window">
-        <field name="name">Reporte de Helpdesk</field>
+        <field name="name">Daily Reports</field>
         <field name="res_model">helpdesk.report.date</field>
         <field name="view_mode">form</field>
         <field name="view_id" ref="helpdesk_custom.view_helpdesk_report_date_form"/>

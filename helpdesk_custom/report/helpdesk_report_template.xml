@@ -1,30 +1,25 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <odoo>
 
-    <!-- Template del documento PDF -->
+    <!-- PDF Document Template -->
     <template id="report_helpdesk_pdf_document">
         <t t-call="web.external_layout">
             <main class="page">
-                <h2>Reporte Helpdesk</h2>
-        
-                <!-- Mostrar el rango de fechas debajo del título -->
+                <h2 style="text-align:center;">Helpdesk Report</h2>
+
+                <!-- Show date range below the title -->
                 <div style="text-align: center; margin-bottom: 15px; font-style: italic; color: #666;">
-                    <div style="display: none; color: red; font-size: 8px;">
-                        DEBUG: data.fecha_inicio = '<t t-esc="data.get('fecha_inicio', '')"/>'
-                        DEBUG: data.fecha_fin = '<t t-esc="data.get('fecha_fin', '')"/>'
-                    </div>
-                    
-                    <t t-if="data.get('fecha_inicio', '') != '' or data.get('fecha_fin', '') != ''">
-                        Período: 
-                        <t t-if="data.get('fecha_inicio', '') != ''">
-                            del <t t-esc="data.get('fecha_inicio', '')"/>
+                    <t t-if="data.get('start_date', '') != 'N/A' or data.get('end_date', '') != 'N/A'">
+                        Period: 
+                        <t t-if="data.get('start_date', '') != 'N/A'">
+                            from <t t-esc="data.get('start_date', '')"/>
                         </t>
-                        <t t-if="data.get('fecha_fin', '') != ''">
-                            al <t t-esc="data.get('fecha_fin', '')"/>
+                        <t t-if="data.get('end_date', '') != 'N/A'">
+                            to <t t-esc="data.get('end_date', '')"/>
                         </t>
                     </t>
                     <t t-else="">
-                        Período: Todas las fechas
+                        Period: All dates
                     </t>
                 </div>
 
@@ -32,47 +27,48 @@
                     <thead>
                         <tr>
                             <th style="border:1px solid #999; padding:4px; background-color:#D9E1F2;">
-                                ESTADO / TÉCNICO
+                                STATE / TECHNICIAN
                             </th>
-                            <!-- Cabeceras de técnicos -->
-                            <t t-foreach="data.get('empleados', [])" t-as="emp">
+                            <!-- Technician headers -->
+                            <t t-foreach="data.get('employees', [])" t-as="emp">
                                 <th style="border:1px solid #999; padding:4px; text-align:center; background-color:#D9E1F2;">
                                     <t t-esc="emp.get('name','')"/>
                                 </th>
                             </t>
                             <th style="border:1px solid #999; padding:4px; text-align:center; background-color:#D9E1F2;">
-                                TOTAL ESTADO
+                                TOTAL STATE
                             </th>
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- Filas de estados -->
-                        <t t-foreach="data.get('estados', [])" t-as="estado">
+                        <!-- Rows per state -->
+                        <t t-set="states_ordered" t-value="[s for s in data.get('states', []) if s != 'Ninguno'] + ['Ninguno']"/>
+                        <t t-foreach="states_ordered" t-as="state">
                             <tr>
                                 <td style="border:1px solid #999; padding:4px; background-color:#FCE4D6;">
-                                    <t t-esc="estado"/>
+                                    <t t-esc="state"/>
                                 </td>
-                                <!-- Conteo por técnico -->
-                                <t t-foreach="data.get('empleados', [])" t-as="emp">
+                                <!-- Count per technician -->
+                                <t t-foreach="data.get('employees', [])" t-as="emp">
                                     <td style="border:1px solid #999; padding:4px; text-align:center;">
-                                        <t t-esc="data.get('conteo', {}).get(estado, {}).get(emp.get('name',''), 0)"/>
+                                        <t t-esc="data.get('count', {}).get(state, {}).get(emp.get('name',''), 0)"/>
                                     </td>
                                 </t>
-                                <!-- Total por estado -->
+                                <!-- Total per state -->
                                 <td style="border:1px solid #999; padding:4px; text-align:center; font-weight:bold; background-color:#BDD7EE;">
-                                    <t t-esc="sum(data.get('conteo', {}).get(estado, {}).values())"/>
+                                    <t t-esc="sum(data.get('count', {}).get(state, {}).values())"/>
                                 </td>
                             </tr>
                         </t>
 
-                        <!-- Fila TOTAL POR TÉCNICO -->
+                        <!-- TOTAL PER TECHNICIAN row -->
                         <tr>
                             <td style="border:1px solid #999; padding:4px; font-weight:bold; background-color:#BDD7EE;">
-                                TOTAL POR TÉCNICO
+                                TOTAL PER TECHNICIAN
                             </td>
-                            <t t-foreach="data.get('empleados', [])" t-as="emp">
+                            <t t-foreach="data.get('employees', [])" t-as="emp">
                                 <td style="border:1px solid #999; padding:4px; text-align:center; font-weight:bold; background-color:#BDD7EE;">
-                                    <t t-esc="data.get('total_por_tecnico', {}).get(emp.get('name',''),0)"/>
+                                    <t t-esc="data.get('total_per_technician', {}).get(emp.get('name',''), 0)"/>
                                 </td>
                             </t>
                             <td style="border:1px solid #999; padding:4px; text-align:center; font-weight:bold; background-color:#FFC000;">
@@ -80,18 +76,19 @@
                             </td>
                         </tr>
 
-                        <!-- Fila TOTAL GENERAL en una sola celda -->
+                        <!-- TOTAL GENERAL row (merged) -->
                         <tr>
-                            <td t-att-colspan="len(data.get('empleados', [])) + 2"
+                            <td t-att-colspan="len(data.get('employees', [])) + 2"
                                 style="border:1px solid #999; padding:6px; text-align:center; font-weight:bold; background-color:#FFB300;">
-                                TOTAL GENERAL: <t t-esc="data.get('total_general',0)"/>
+                                TOTAL GENERAL: <t t-esc="data.get('total_general', 0)"/>
                             </td>
                         </tr>
 
+                        <!-- Report generation date -->
                         <tr>
-                            <td t-att-colspan="len(data.get('empleados', [])) + 2"
+                            <td t-att-colspan="len(data.get('employees', [])) + 2"
                                 style="border:1px solid #999; padding:4px; text-align:center; font-style:italic; color:#666; background-color:#f9f9f9;">
-                                Reporte generado el <t t-esc="data.get('fecha_generacion', '')"/>
+                                Report generated on <t t-esc="data.get('generation_date', '')"/>
                             </td>
                         </tr>
                     </tbody>
@@ -100,7 +97,7 @@
         </t>
     </template>
 
-    <!-- Template que llama al documento desde html_container -->
+    <!-- Container template -->
     <template id="report_helpdesk_pdf">
         <t t-call="web.html_container">
             <t t-call="helpdesk_custom.report_helpdesk_pdf_document"/>
