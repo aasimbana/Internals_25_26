@@ -1,0 +1,553 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* helpdesk_custom
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 17.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-10-01 16:07+0000\n"
+"PO-Revision-Date: 2025-10-01 16:07+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: helpdesk_custom
+#: model:ir.actions.report,print_report_name:helpdesk_custom.action_report_status_helpdesk_pdf
+msgid ""
+"'helpdesk_status_report_%s' % (object.date_end.strftime('%Y%m%d') if "
+"object.date_end else '')"
+msgstr ""
+
+#. module: helpdesk_custom
+#: model_terms:ir.ui.view,arch_db:helpdesk_custom.day_report_template_document
+msgid "<strong>ASSIGNED</strong>"
+msgstr "ASIGNADO"
+
+#. module: helpdesk_custom
+#: model_terms:ir.ui.view,arch_db:helpdesk_custom.day_report_template_document
+msgid "<strong>CLOSED</strong>"
+msgstr "<strong>CERRADO</strong>"
+
+#. module: helpdesk_custom
+#: model_terms:ir.ui.view,arch_db:helpdesk_custom.report_status_template
+msgid "<strong>Company:</strong>"
+msgstr "<strong>Compañía:</strong>"
+
+#. module: helpdesk_custom
+#: model_terms:ir.ui.view,arch_db:helpdesk_custom.company_report_template
+msgid "<strong>Company</strong>"
+msgstr "<strong>Compañía</strong>"
+
+#. module: helpdesk_custom
+#: model_terms:ir.ui.view,arch_db:helpdesk_custom.report_status_template
+msgid "<strong>End Date:</strong>"
+msgstr "<strong>Fecha final:</strong>"
+
+#. module: helpdesk_custom
+#: model_terms:ir.ui.view,arch_db:helpdesk_custom.company_report_template
+#: model_terms:ir.ui.view,arch_db:helpdesk_custom.day_report_template_document
+#: model_terms:ir.ui.view,arch_db:helpdesk_custom.report_status_template
+msgid "<strong>Generated on:</strong>"
+msgstr "<strong>Generado el:</strong>"
+
+#. module: helpdesk_custom
+#: model_terms:ir.ui.view,arch_db:helpdesk_custom.report_status_template
+msgid "<strong>Generated:</strong>"
+msgstr "<strong>Generado:</strong>"
+
+#. module: helpdesk_custom
+#: model_terms:ir.ui.view,arch_db:helpdesk_custom.day_report_template_document
+msgid "<strong>NEW</strong>"
+msgstr "<strong>NUEVO</strong>"
+
+#. module: helpdesk_custom
+#: model_terms:ir.ui.view,arch_db:helpdesk_custom.company_report_template
+msgid "<strong>No data found for the selected criteria</strong>"
+msgstr "<strong>No se encontraron datos para el criterio seleccionado</strong>"
+
+#. module: helpdesk_custom
+#: model_terms:ir.ui.view,arch_db:helpdesk_custom.company_report_template
+msgid ""
+"<strong>Period:</strong> \n"
+"                        from"
+msgstr "<strong>Periodo:</strong> \n"
+"                        from"
+
+#. module: helpdesk_custom
+#: model_terms:ir.ui.view,arch_db:helpdesk_custom.day_report_template_document
+msgid "<strong>TECHNICIAN</strong>"
+msgstr "<strong>TÉCNICO</strong>"
+
+#. module: helpdesk_custom
+#: model_terms:ir.ui.view,arch_db:helpdesk_custom.company_report_template
+msgid "<strong>Total</strong>"
+msgstr "<strong>Total</strong>"
+
+#. module: helpdesk_custom
+#: model_terms:ir.ui.view,arch_db:helpdesk_custom.day_report_template_document
+msgid "<strong>date:</strong>"
+msgstr "<strong>fecha:</strong>"
+
+#. module: helpdesk_custom
+#: model:ir.model.fields,field_description:helpdesk_custom.field_helpdesk_support__user_id
+msgid "Assign To"
+msgstr "Asignar a"
+
+#. module: helpdesk_custom
+#: model_terms:ir.ui.view,arch_db:helpdesk_custom.view_helpdesk_report_company_form
+#: model_terms:ir.ui.view,arch_db:helpdesk_custom.view_helpdesk_report_general_form
+#: model_terms:ir.ui.view,arch_db:helpdesk_custom.view_helpdesk_report_status_form
+#: model_terms:ir.ui.view,arch_db:helpdesk_custom.view_helpdesk_report_wizard_form
+msgid "Cancel"
+msgstr "Cancelar"
+
+#. module: helpdesk_custom
+#: model_terms:ir.ui.view,arch_db:helpdesk_custom.view_helpdesk_report_date_form
+msgid "Cancelar"
+msgstr "Cancelar"
+
+#. module: helpdesk_custom
+#: model:ir.model.fields,field_description:helpdesk_custom.field_helpdesk_report_company__company_id
+#: model:ir.model.fields,field_description:helpdesk_custom.field_helpdesk_report_date__company_id
+#: model:ir.model.fields,field_description:helpdesk_custom.field_helpdesk_report_general__company_id
+#: model:ir.model.fields,field_description:helpdesk_custom.field_helpdesk_report_status__company_id
+#: model:ir.model.fields,field_description:helpdesk_custom.field_helpdesk_support__company_id
+msgid "Company"
+msgstr "Compañía"
+
+#. module: helpdesk_custom
+#: model:ir.ui.menu,name:helpdesk_custom.menu_company_report
+msgid "Company Report"
+msgstr "Reporte por Compañía"
+
+#. module: helpdesk_custom
+#: model:ir.actions.report,name:helpdesk_custom.action_report_company_helpdesk_pdf
+msgid "Company Report PDF"
+msgstr "Reporte por Compañía PDF"
+
+#. module: helpdesk_custom
+#: model:ir.model.fields,field_description:helpdesk_custom.field_helpdesk_report_company__create_uid
+#: model:ir.model.fields,field_description:helpdesk_custom.field_helpdesk_report_date__create_uid
+#: model:ir.model.fields,field_description:helpdesk_custom.field_helpdesk_report_general__create_uid
+#: model:ir.model.fields,field_description:helpdesk_custom.field_helpdesk_report_status__create_uid
+#: model:ir.model.fields,field_description:helpdesk_custom.field_helpdesk_report_wizard__create_uid
+msgid "Created by"
+msgstr "Creado por"
+
+#. module: helpdesk_custom
+#: model:ir.model.fields,field_description:helpdesk_custom.field_helpdesk_report_company__create_date
+#: model:ir.model.fields,field_description:helpdesk_custom.field_helpdesk_report_date__create_date
+#: model:ir.model.fields,field_description:helpdesk_custom.field_helpdesk_report_general__create_date
+#: model:ir.model.fields,field_description:helpdesk_custom.field_helpdesk_report_status__create_date
+#: model:ir.model.fields,field_description:helpdesk_custom.field_helpdesk_report_wizard__create_date
+msgid "Created on"
+msgstr "Creado el"
+
+#. module: helpdesk_custom
+#: model:ir.model,name:helpdesk_custom.model_helpdesk_reporte_por_dia_xlsx
+msgid "Daily Report - Helpdesk"
+msgstr "Reporte por Dia - Helpdesk"
+
+#. module: helpdesk_custom
+#: model:ir.model,name:helpdesk_custom.model_report_helpdesk_custom_day_report_template
+msgid "Daily Report - Helpdesk KPI (PDF)"
+msgstr "Reporte por Dia - Helpdesk KPI (PDF)"
+
+#. module: helpdesk_custom
+#: model:ir.actions.act_window,name:helpdesk_custom.helpdesk_report_date_action
+#: model_terms:ir.ui.view,arch_db:helpdesk_custom.view_helpdesk_report_date_form
+msgid "Daily Reports"
+msgstr "Reporte por Dia"
+
+#. module: helpdesk_custom
+#: model:ir.ui.menu,name:helpdesk_custom.menu_data_report
+msgid "Data Report"
+msgstr "Reporte de tickets cerrados por dia"
+
+#. module: helpdesk_custom
+#: model:ir.model.fields,field_description:helpdesk_custom.field_helpdesk_report_status__date_end
+msgid "Date end"
+msgstr "Fecha final"
+
+#. module: helpdesk_custom
+#: model:ir.actions.report,name:helpdesk_custom.action_report_day_helpdesk_pdf
+msgid "Day Report PDF"
+msgstr "Reporte por Dia PDF"
+
+#. module: helpdesk_custom
+#: model:ir.model.fields,field_description:helpdesk_custom.field_helpdesk_report_company__display_name
+#: model:ir.model.fields,field_description:helpdesk_custom.field_helpdesk_report_date__display_name
+#: model:ir.model.fields,field_description:helpdesk_custom.field_helpdesk_report_general__display_name
+#: model:ir.model.fields,field_description:helpdesk_custom.field_helpdesk_report_status__display_name
+#: model:ir.model.fields,field_description:helpdesk_custom.field_helpdesk_report_wizard__display_name
+msgid "Display Name"
+msgstr "Nombre"
+
+#. module: helpdesk_custom
+#: model:ir.model.fields,field_description:helpdesk_custom.field_helpdesk_support__email
+msgid "Email"
+msgstr "Correo electrónico"
+
+#. module: helpdesk_custom
+#: model:ir.model,name:helpdesk_custom.model_hr_employee
+msgid "Employee"
+msgstr "Empleado"
+
+#. module: helpdesk_custom
+#: model:ir.model.fields,field_description:helpdesk_custom.field_helpdesk_report_company__date_end
+msgid "End Date"
+msgstr "Fecha final"
+
+#. module: helpdesk_custom
+#: model:ir.model.fields,field_description:helpdesk_custom.field_helpdesk_report_company__xlsx_filename
+msgid "Filename"
+msgstr "Nombre del archivo"
+
+#. module: helpdesk_custom
+#: model:ir.model,name:helpdesk_custom.model_report_helpdesk_custom_general_report_template
+msgid "General Helpdesk Report by Date (PDF)"
+msgstr "Reporte General de Helpdesk por Fecha (PDF)"
+
+#. module: helpdesk_custom
+#: model:ir.ui.menu,name:helpdesk_custom.menu_general_report
+msgid "General Report"
+msgstr "Reporte General"
+
+#. module: helpdesk_custom
+#: model:ir.actions.report,name:helpdesk_custom.action_report_general_helpdesk_pdf
+msgid "General Report PDF"
+msgstr "Reporte General PDF"
+
+#. module: helpdesk_custom
+#: model:ir.actions.act_window,name:helpdesk_custom.helpdesk_report_general_action
+#: model_terms:ir.ui.view,arch_db:helpdesk_custom.view_helpdesk_report_general_form
+msgid "General report"
+msgstr "Reporte General"
+
+#. module: helpdesk_custom
+#: model:ir.model,name:helpdesk_custom.model_helpdesk_report_general_xlsx
+msgid "General report by date"
+msgstr "Reporte General por Fecha"
+
+#. module: helpdesk_custom
+#: model_terms:ir.ui.view,arch_db:helpdesk_custom.view_helpdesk_report_date_form
+msgid "Generar Excel"
+msgstr "Generar Excel"
+
+#. module: helpdesk_custom
+#: model_terms:ir.ui.view,arch_db:helpdesk_custom.view_helpdesk_report_company_form
+#: model_terms:ir.ui.view,arch_db:helpdesk_custom.view_helpdesk_report_date_form
+#: model_terms:ir.ui.view,arch_db:helpdesk_custom.view_helpdesk_report_general_form
+msgid "Generar PDF"
+msgstr "Generar PDF"
+
+#. module: helpdesk_custom
+#: model_terms:ir.ui.view,arch_db:helpdesk_custom.view_helpdesk_report_company_form
+#: model_terms:ir.ui.view,arch_db:helpdesk_custom.view_helpdesk_report_general_form
+#: model_terms:ir.ui.view,arch_db:helpdesk_custom.view_helpdesk_report_status_form
+#: model_terms:ir.ui.view,arch_db:helpdesk_custom.view_helpdesk_report_wizard_form
+msgid "Generate Excel"
+msgstr "Generar Excel"
+
+#. module: helpdesk_custom
+#: model_terms:ir.ui.view,arch_db:helpdesk_custom.view_helpdesk_report_status_form
+#: model_terms:ir.ui.view,arch_db:helpdesk_custom.view_helpdesk_report_wizard_form
+msgid "Generate PDF"
+msgstr "Generar PDF"
+
+#. module: helpdesk_custom
+#: model:ir.model.fields,field_description:helpdesk_custom.field_helpdesk_report_company__xlsx_file
+msgid "Generated XLSX Report"
+msgstr "ReporteGenerado XLSX"
+
+#. module: helpdesk_custom
+#: model_terms:ir.ui.view,arch_db:helpdesk_custom.report_helpdesk_pdf_document
+msgid "Helpdesk Report"
+msgstr "Reporte de tikets Asignados"
+
+#. module: helpdesk_custom
+#: model:ir.model,name:helpdesk_custom.model_helpdesk_report_company
+msgid "Helpdesk Report Company Wizard"
+msgstr "Reporte de Miembro de soporte Wizard"
+
+#. module: helpdesk_custom
+#: model:ir.model,name:helpdesk_custom.model_helpdesk_report_date
+msgid "Helpdesk Report Date Wizard"
+msgstr "Reporte de Miembro de soporte Wizard"
+
+#. module: helpdesk_custom
+#: model:ir.actions.report,name:helpdesk_custom.action_report_helpdesk_pdf
+msgid "Helpdesk Report PDF"
+msgstr "Reporte de Miembro de soporte PDF"
+
+#. module: helpdesk_custom
+#: model:ir.model,name:helpdesk_custom.model_helpdesk_report_status
+msgid "Helpdesk Report Status Wizard"
+msgstr "Reporte de Miembro de soporte Wizard"
+
+#. module: helpdesk_custom
+#: model:ir.model,name:helpdesk_custom.model_helpdesk_report_wizard
+msgid "Helpdesk Report Wizard"
+msgstr "Reporte de Miembro de soporte Wizard"
+
+#. module: helpdesk_custom
+#: model:ir.actions.act_window,name:helpdesk_custom.helpdesk_report_wizard_action
+#: model:ir.ui.menu,name:helpdesk_custom.helpdesk_reports
+#: model_terms:ir.ui.view,arch_db:helpdesk_custom.view_helpdesk_report_wizard_form
+msgid "Helpdesk Reports"
+msgstr "Reportes de Soporte"
+
+#. module: helpdesk_custom
+#: model_terms:ir.ui.view,arch_db:helpdesk_custom.report_status_template
+msgid "Helpdesk Status Report"
+msgstr "Reporte de Estado de Miembro de soporte"
+
+#. module: helpdesk_custom
+#: model:ir.model,name:helpdesk_custom.model_report_helpdesk_custom_report_status_template
+msgid "Helpdesk Status Report PDF"
+msgstr "Reporte de Estado de Miembro de soporte PDF"
+
+#. module: helpdesk_custom
+#: model:ir.model,name:helpdesk_custom.model_helpdesk_report_status_xlsx
+msgid "Helpdesk Status Report XLSX"
+msgstr "Reporte de Estado de Miembro de soporte XLSX"
+
+#. module: helpdesk_custom
+#: model:ir.model,name:helpdesk_custom.model_helpdesk_support
+msgid "Helpdesk Support"
+msgstr "Asistencia técnica"
+
+#. module: helpdesk_custom
+#: model:ir.model,name:helpdesk_custom.model_helpdesk_report_xlsx_helper
+msgid "Helper to generate XLSX for Helpdesk Report"
+msgstr "Ayudante para generar XLSX para el Reporte de Miembro de soporte"
+
+#. module: helpdesk_custom
+#: model:ir.model.fields,field_description:helpdesk_custom.field_helpdesk_report_company__id
+#: model:ir.model.fields,field_description:helpdesk_custom.field_helpdesk_report_date__id
+#: model:ir.model.fields,field_description:helpdesk_custom.field_helpdesk_report_general__id
+#: model:ir.model.fields,field_description:helpdesk_custom.field_helpdesk_report_status__id
+#: model:ir.model.fields,field_description:helpdesk_custom.field_helpdesk_report_wizard__id
+msgid "ID"
+msgstr "ID"
+
+#. module: helpdesk_custom
+#: model:ir.model.fields,field_description:helpdesk_custom.field_helpdesk_report_company__write_uid
+#: model:ir.model.fields,field_description:helpdesk_custom.field_helpdesk_report_date__write_uid
+#: model:ir.model.fields,field_description:helpdesk_custom.field_helpdesk_report_general__write_uid
+#: model:ir.model.fields,field_description:helpdesk_custom.field_helpdesk_report_status__write_uid
+#: model:ir.model.fields,field_description:helpdesk_custom.field_helpdesk_report_wizard__write_uid
+msgid "Last Updated by"
+msgstr "Actualizado por"
+
+#. module: helpdesk_custom
+#: model:ir.model.fields,field_description:helpdesk_custom.field_helpdesk_report_company__write_date
+#: model:ir.model.fields,field_description:helpdesk_custom.field_helpdesk_report_date__write_date
+#: model:ir.model.fields,field_description:helpdesk_custom.field_helpdesk_report_general__write_date
+#: model:ir.model.fields,field_description:helpdesk_custom.field_helpdesk_report_status__write_date
+#: model:ir.model.fields,field_description:helpdesk_custom.field_helpdesk_report_wizard__write_date
+msgid "Last Updated on"
+msgstr "Actualizado el"
+
+#. module: helpdesk_custom
+#: model_terms:ir.ui.view,arch_db:helpdesk_custom.report_helpdesk_pdf_document
+msgid "Period:"
+msgstr "Periodo:"
+
+#. module: helpdesk_custom
+#: model_terms:ir.ui.view,arch_db:helpdesk_custom.report_helpdesk_pdf_document
+msgid "Period: All dates"
+msgstr "Periodo: Todas las fechas"
+
+#. module: helpdesk_custom
+#: model_terms:ir.ui.view,arch_db:helpdesk_custom.company_report_template
+msgid "Report by Company"
+msgstr "Reporte por Empresa"
+
+#. module: helpdesk_custom
+#: model:ir.model,name:helpdesk_custom.model_helpdesk_report_by_company_xlsx
+msgid "Report by Company - Helpdesk KPI"
+msgstr "Reporte por Empresa - KPI de Helpdesk"
+
+#. module: helpdesk_custom
+#: model:ir.model,name:helpdesk_custom.model_report_helpdesk_custom_company_report_template
+msgid "Report by Company - Helpdesk KPI (PDF)"
+msgstr "Reporte por Empresa - KPI de Helpdesk (PDF)"
+
+#. module: helpdesk_custom
+#: model:ir.actions.act_window,name:helpdesk_custom.helpdesk_report_company_action
+msgid "Report company"
+msgstr "Reporte por Empresa"
+
+#. module: helpdesk_custom
+#: model_terms:ir.ui.view,arch_db:helpdesk_custom.report_helpdesk_pdf_document
+msgid "Report generated on"
+msgstr "Reporte Generado el"
+
+#. module: helpdesk_custom
+#: model_terms:ir.ui.view,arch_db:helpdesk_custom.day_report_template_document
+msgid "Report per day"
+msgstr "Reporte por dia"
+
+#. module: helpdesk_custom
+#: model:res.groups,name:helpdesk_custom.group_report_helpdesk
+msgid "Reportar Helpdesk"
+msgstr "Reportar Helpdesk"
+
+#. module: helpdesk_custom
+#: model:ir.model,name:helpdesk_custom.model_report_helpdesk_custom_report_helpdesk_pdf
+msgid "Reporte Helpdesk PDF"
+msgstr "Reporte Helpdesk PDF"
+
+#. module: helpdesk_custom
+#: model_terms:ir.ui.view,arch_db:helpdesk_custom.view_helpdesk_report_company_form
+msgid "Reportes de Helpdesk"
+msgstr "Reportes de Soporte tecnico"
+
+#. module: helpdesk_custom
+#: model_terms:ir.ui.view,arch_db:helpdesk_custom.report_helpdesk_pdf_document
+msgid "STATE / TECHNICIAN"
+msgstr "ESTADO / TECNICO"
+
+#. module: helpdesk_custom
+#: model_terms:ir.ui.view,arch_db:helpdesk_custom.view_helpdesk_report_company_form
+#: model_terms:ir.ui.view,arch_db:helpdesk_custom.view_helpdesk_report_general_form
+#: model_terms:ir.ui.view,arch_db:helpdesk_custom.view_helpdesk_report_status_form
+msgid "Select the company for which you want to generate the report."
+msgstr "Seleccione la empresa para la que desea generar el informe."
+
+#. module: helpdesk_custom
+#: model_terms:ir.ui.view,arch_db:helpdesk_custom.report_status_template
+msgid "Stage"
+msgstr "Etapa"
+
+#. module: helpdesk_custom
+#: model:ir.model.fields,field_description:helpdesk_custom.field_helpdesk_report_company__date_start
+#: model:ir.model.fields,field_description:helpdesk_custom.field_helpdesk_report_date__date_start
+msgid "Start Date"
+msgstr "Fecha Inicio"
+
+#. module: helpdesk_custom
+#: model:ir.ui.menu,name:helpdesk_custom.menu_status_report
+msgid "Status Report"
+msgstr "Reporte de Estado"
+
+#. module: helpdesk_custom
+#: model:ir.actions.report,name:helpdesk_custom.action_report_status_helpdesk_pdf
+msgid "Status Report PDF"
+msgstr "Reporte de Estado PDF"
+
+#. module: helpdesk_custom
+#: model:ir.actions.act_window,name:helpdesk_custom.helpdesk_report_status_action
+#: model_terms:ir.ui.view,arch_db:helpdesk_custom.view_helpdesk_report_status_form
+msgid "Status report"
+msgstr "Reporte de Estado"
+
+#. module: helpdesk_custom
+#: model:ir.model.fields,field_description:helpdesk_custom.field_helpdesk_report_date__employee_ids
+#: model:ir.model.fields,field_description:helpdesk_custom.field_helpdesk_report_status__employee_ids
+msgid "Support Employees"
+msgstr "Empleados de Soporte"
+
+#. module: helpdesk_custom
+#: model_terms:ir.ui.view,arch_db:helpdesk_custom.company_report_template
+#: model_terms:ir.ui.view,arch_db:helpdesk_custom.report_status_template
+msgid "TOTAL"
+msgstr "TOTAL"
+
+#. module: helpdesk_custom
+#: model_terms:ir.ui.view,arch_db:helpdesk_custom.day_report_template_document
+msgid "TOTAL CLOSED"
+msgstr "TOTAL CERRADOS"
+
+#. module: helpdesk_custom
+#: model_terms:ir.ui.view,arch_db:helpdesk_custom.report_helpdesk_pdf_document
+msgid "TOTAL GENERAL:"
+msgstr "TOTAL GENERAL:"
+
+#. module: helpdesk_custom
+#: model_terms:ir.ui.view,arch_db:helpdesk_custom.report_helpdesk_pdf_document
+msgid "TOTAL PER TECHNICIAN"
+msgstr "TOTAL POR TECNICO"
+
+#. module: helpdesk_custom
+#: model_terms:ir.ui.view,arch_db:helpdesk_custom.report_helpdesk_pdf_document
+msgid "TOTAL STATE"
+msgstr "TOTAL ESTADO"
+
+#. module: helpdesk_custom
+#: model:ir.model.fields,field_description:helpdesk_custom.field_hr_employee__technical_support
+msgid "Technical Support"
+msgstr "Soporte Tecnico"
+
+#. module: helpdesk_custom
+#: model:ir.ui.menu,name:helpdesk_custom.menu_helpdesk_report_wizard
+msgid "Ticket Report"
+msgstr "Reporte de Ticket cerrados"
+
+#. module: helpdesk_custom
+#: model:ir.model.fields,field_description:helpdesk_custom.field_helpdesk_support__subject_type_id
+msgid "Type of Subject"
+msgstr "Tipo de Asunto"
+
+#. module: helpdesk_custom
+#: model:ir.model.fields,field_description:helpdesk_custom.field_helpdesk_support__type_ticket_id
+msgid "Type of Ticket"
+msgstr "Tipo de Ticket"
+
+#. module: helpdesk_custom
+#: model:ir.model,name:helpdesk_custom.model_helpdesk_report_general
+msgid "Wizard Reporte General de Helpdesk"
+msgstr "Reporte General de Asistencia"
+
+#. module: helpdesk_custom
+#. odoo-python
+#: code:addons/helpdesk_custom/models/helpdesk_support.py:0
+#, python-format
+msgid "You cannot close: the following tasks are not finished: %s"
+msgstr "No puedes cerrar: las siguientes tareas no están finalizadas: %s"
+
+#. module: helpdesk_custom
+#: model:ir.model.fields,field_description:helpdesk_custom.field_helpdesk_report_wizard__company_id
+msgid "company"
+msgstr "Empresa"
+
+#. module: helpdesk_custom
+#: model:ir.model.fields,field_description:helpdesk_custom.field_helpdesk_report_general__date_end
+msgid "date end"
+msgstr "Fecha Final"
+
+#. module: helpdesk_custom
+#: model:ir.model.fields,field_description:helpdesk_custom.field_helpdesk_report_general__date_start
+msgid "date start"
+msgstr "Fecha Inicio"
+
+#. module: helpdesk_custom
+#: model:ir.model.fields,field_description:helpdesk_custom.field_helpdesk_report_wizard__employee_ids
+msgid "employees support"
+msgstr "Empleados de Soporte"
+
+#. module: helpdesk_custom
+#: model:ir.model.fields,field_description:helpdesk_custom.field_helpdesk_report_wizard__date_end
+msgid "end date"
+msgstr "Fecha Final"
+
+#. module: helpdesk_custom
+#: model_terms:ir.ui.view,arch_db:helpdesk_custom.report_helpdesk_pdf_document
+msgid "from"
+msgstr "Desde"
+
+#. module: helpdesk_custom
+#: model:ir.model.fields,field_description:helpdesk_custom.field_helpdesk_report_wizard__date_start
+msgid "start date"
+msgstr "Fecha Inicio"
+
+#. module: helpdesk_custom
+#: model_terms:ir.ui.view,arch_db:helpdesk_custom.company_report_template
+#: model_terms:ir.ui.view,arch_db:helpdesk_custom.report_helpdesk_pdf_document
+msgid "to"
+msgstr "Hasta"

@@ -3,7 +3,7 @@
         <field name="name">helpdesk.report.status.form</field>
         <field name="model">helpdesk.report.status</field>
         <field name="arch" type="xml">
-            <form string="Reportes de Status">
+            <form string="Status report">
                 <group>
                     <group>
                         <field name="company_id" readonly="0" help="Select the company for which you want to generate the report."/>
@@ -14,7 +14,7 @@
                 </group>
                 
                 <footer>
-                  <button string="Generar PDF" type="object" name="action_print_status_report_pdf" class="btn-primary"/>
+                  <button string="Generate PDF" type="object" name="action_print_status_report_pdf" class="btn-primary"/>
                   <button string="Generate Excel" type="object" name="action_generate_report_status_xlsx" class="btn-primary"/>
                   <button string="Cancel" class="btn-secondary" special="cancel"/>           
                 </footer>
@@ -23,7 +23,7 @@
     </record>
 
     <record id="helpdesk_report_status_action" model="ir.actions.act_window">
-        <field name="name">Report status</field>
+        <field name="name">Status report</field>
         <field name="res_model">helpdesk.report.status</field>
         <field name="view_mode">form</field>
         <field name="view_id" ref="helpdesk_custom.view_helpdesk_report_status_form"/>

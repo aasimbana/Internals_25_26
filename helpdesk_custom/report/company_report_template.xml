@@ -2,38 +2,35 @@
 <odoo>
     <template id="company_report_template">
         <t t-call="web.external_layout">
-            <!-- 🔹 Garantizamos que 'd' siempre sea un diccionario -->
             <t t-set="d" t-value="data or {}"/>
 
            
 
             <main class="page">
-                <div style="width:100%; margin: 10px 0 25px 0; display:flex; justify-content:space-between; align-items:center; font-size:14px;">
+                <div style="width:100%; margin: 10px 0 10px 0; display:flex; justify-content:space-between; align-items:center; font-size:10px;">
                     <div style="text-align:left; font-size:18px; font-weight:bold; color:#366092;">
-                        Reporte por Compañía
+                        Report by Company
                     </div>
                     <div style="text-align:right; font-style:italic; color:#444; white-space:nowrap;">
-                        <strong>Período:</strong> 
-                        del <t t-esc="d.get('start_date', 'N/A')"/> 
-                        al <t t-esc="d.get('end_date', 'N/A')"/>
+                        <strong>Period:</strong> 
+                        from <t t-esc="d.get('start_date', 'N/A')"/> 
+                        to <t t-esc="d.get('end_date', 'N/A')"/>
                     </div>
                 </div>
                 
 
-                <table style="width:100%; border-collapse:collapse; border:1px solid #366092; margin-bottom:25px; table-layout:fixed;">
+                <table style="width:100%; border-collapse:collapse; border:1px solid #366092; margin-bottom:15px; table-layout:fixed;">
                     <thead>
                         <tr style="background-color: #366092; color:white;">
-                            <!-- Columna más ancha para Company -->
-                            <th style="border:1px solid #366092; padding:10px; text-align:left; width:30%;">
+                            <th style="border:1px solid #366092; padding:5px; text-align:left; width:30%;">
                                 <strong>Company</strong>
                             </th>
-                            <!-- Columnas de estados más espaciosas -->
                             <t t-foreach="d.get('stage_types', [])" t-as="stage">
                                 <th style="border:1px solid #366092; padding:10px; text-align:center; word-wrap:break-word; white-space:normal; width:8%;">
                                     <t t-esc="stage"/>
                                 </th>
                             </t>
-                            <!-- Columna de total -->
+                          
                             <th style="border:1px solid #366092; padding:15px; text-align:center; width:8%;">
                                 <strong>Total</strong>
                             </th>
@@ -56,7 +53,7 @@
                             </tr>
                         </t>
                 
-                        <!-- Totales -->
+                        
                         <tr style="background-color:#BFBFBF; font-weight:bold;">
                             <td style="border:1px solid #366092; padding:11px; text-align:right;">
                                 TOTAL
@@ -74,15 +71,15 @@
                 </table>
                 
                 
-                <!-- Mensaje si no hay compañías -->
+          
                 <t t-if="not d.get('companies')">
                     <div style="text-align: center; padding: 20px; color: #666;">
                         <strong>No data found for the selected criteria</strong>
                     </div>
                 </t>
 
-                <!-- Fecha de generación -->
-                <div style="text-align: center; margin-top: 30px; font-style: italic; color:#666;">
+            
+                <div style="text-align: center; margin-top: 15px; font-style: italic; color:#666;">
                     <strong>Generated on:</strong> 
                     <t t-esc="d.get('generation_date', '')"/>
                 </div>

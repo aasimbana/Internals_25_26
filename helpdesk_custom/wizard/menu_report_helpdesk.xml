@@ -41,6 +41,14 @@
         action="helpdesk_report_general_action"
     />
 
+    <menuitem
+        id="menu_status_report"
+        name="Status Report"
+        sequence="5"
+        parent="helpdesk_reports"
+        action="helpdesk_report_status_action"
+    />
+
 
 
 </odoo>

@@ -1,186 +1,192 @@
-
 import io
 import json
 from datetime import datetime, time
 from odoo import models, fields, api
 from odoo.exceptions import UserError
+
 try:
     import xlsxwriter
 except ImportError:
     xlsxwriter = None
 
+
 class HelpdeskReportXlsx(models.AbstractModel):
     _name = "helpdesk.report.xlsx.helper"
-    _description = "Helper para generar XLSX del reporte helpdesk"
+    _description = "Helper to generate XLSX for Helpdesk Report"
 
     def generate_helpdesk_report_xlsx(self, wizard):
         if xlsxwriter is None:
-            raise UserError("xlsxwriter no está disponible en el server")
+            raise UserError("xlsxwriter is not available on the server")
 
-        # CONSULTA SQL DIRECTA PARA OBTENER LOS NOMBRES DE LOS ESTADOS
+        # SQL query to get state names
         try:
             query = """
-                SELECT name 
-                FROM helpdesk_stage_config 
-                WHERE name IS NOT NULL 
+                SELECT DISTINCT name AS estado
+                FROM public.ticket_type;
             """
             self.env.cr.execute(query)
             results = self.env.cr.fetchall()
-            
-            estados_unique = []
+
+            unique_states = []
 
             for row in results:
                 name_value = row[0]
-                
                 stage_dict = None
-                # Caso 1: es string, intentar parsear JSON
+
+                # Case 1: string, try to parse as JSON
                 if isinstance(name_value, str):
                     try:
                         stage_dict = json.loads(name_value)
                     except json.JSONDecodeError:
-                        # No es JSON, tratar como string simple
                         stage_dict = {"es_EC": name_value, "en_US": name_value}
-                # Caso 2: ya es dict
                 elif isinstance(name_value, dict):
                     stage_dict = name_value
-                # Caso 3: otro tipo (None, int...), convertir a string
                 else:
                     stage_dict = {"es_EC": str(name_value), "en_US": str(name_value)}
 
-                # Extraer valor en español o inglés
-                valor_es = stage_dict.get('es_EC')
-                valor_en = stage_dict.get('en_US')
-                estado_valor = valor_es or valor_en
-                if estado_valor:
-                    estados_unique.append(estado_valor)
+                value_es = stage_dict.get('es_EC')
+                value_en = stage_dict.get('en_US')
+                state_value = value_es or value_en
+                if state_value:
+                    unique_states.append(state_value)
 
-            # Eliminar duplicados y mantener orden
-            estados_unique = list(dict.fromkeys(estados_unique))
+            unique_states = list(dict.fromkeys(unique_states))
 
         except Exception as e:
-            # Si falla la consulta SQL, usar lista por defecto
             raise ValueError(
-                "No se pudieron obtener los estados desde la base de datos, se usará la lista por defecto"
+                "Failed to retrieve states from the database, a default list will be used"
             ) from e
 
+        # Use retrieved states
+        states = unique_states
 
-        # USAR LOS NOMBRES OBTENIDOS
-        estados = estados_unique
-        
-        empleados = wizard.employee_ids
-        if not empleados:
-            empleados = self.env['hr.employee'].search([('technical_support','=',True)])
+        employees = wizard.employee_ids
+        if not employees:
+            employees = self.env['hr.employee'].search([('technical_support', '=', True)])
 
-        empleados = empleados.sorted(key=lambda r: r.name)
+        employees = employees.sorted(key=lambda r: r.name)
 
         domain = [('company_id', '=', wizard.company_id.id)]
         if wizard.date_start:
-            domain.append(('create_date', '>=', datetime.combine(wizard.date_start, time.min)))
+            domain.append(('close_date', '>=', datetime.combine(wizard.date_start, time.min)))
         if wizard.date_end:
-            domain.append(('create_date', '<=', datetime.combine(wizard.date_end, time.max)))
+            domain.append(('close_date', '<=', datetime.combine(wizard.date_end, time.max)))
 
-        user_ids = empleados.mapped('user_id.id')
+        user_ids = employees.mapped('user_id.id')
         domain.append(('user_id', 'in', user_ids))
         tickets = self.env['helpdesk.support'].search(domain)
 
-        # INICIALIZAR CONTEO
-        conteo = {}
-        total_por_tecnico = {}
-        total_general = 0
+        # Initialize counters
+        ticket_count = {}
+        total_by_technician = {}
+        total_overall = 0
 
-        # Inicializar conteo para todos los estados con todos los empleados
-        for estado in estados:
-            conteo[estado] = {}
-            for emp in empleados:
-                conteo[estado][emp.name] = 0
+        # Initialize count for all states and employees
+        for state in states:
+            ticket_count[state] = {}
+            for emp in employees:
+                ticket_count[state][emp.name] = 0
 
-        # Inicializar totales por técnico para los empleados seleccionados
-        for emp in empleados:
-            total_por_tecnico[emp.name] = 0
+        # 🔹 Aseguramos que "Ninguno" siempre exista
+        if "Ninguno" not in ticket_count:
+            ticket_count["Ninguno"] = {}
+            for emp in employees:
+                ticket_count["Ninguno"][emp.name] = 0
 
-        # CONTAR TICKETS
+        # Initialize total per technician
+        for emp in employees:
+            total_by_technician[emp.name] = 0
+
+        # Count tickets
         for ticket in tickets:
-            tecnico_name = ticket.user_id.employee_id.name if ticket.user_id and ticket.user_id.employee_id else 'Sin asignar'
-            estado_code = ticket.stage_id.name if ticket.stage_id else 'Sin Estado'
-            
-            # Si el estado no está en la lista, usar "Sin Estado"
-            if estado_code not in estados:
-                estado_code = 'Sin Estado'
-                # Si "Sin Estado" no existe en el conteo, crearlo dinámicamente
-                if estado_code not in conteo:
-                    conteo[estado_code] = {}
-                    for emp in empleados:
-                        conteo[estado_code][emp.name] = 0
+            technician_name = (
+                ticket.user_id.employee_id.name
+                if ticket.user_id and ticket.user_id.employee_id
+                else 'Unassigned'
+            )
 
-            # Si el técnico no está en la lista de empleados seleccionados, usar 'Sin asignar'
-            if tecnico_name not in total_por_tecnico:
-                tecnico_name = 'Sin asignar'
-                # Si 'Sin asignar' no existe en el conteo, crearlo dinámicamente
-                if tecnico_name not in total_por_tecnico:
-                    total_por_tecnico[tecnico_name] = 0
-                    for estado in conteo:
-                        conteo[estado][tecnico_name] = 0
+            # usar type_ticket_id.name en lugar de stage_id
+            state_code = ticket.type_ticket_id.name if ticket.type_ticket_id else 'Ninguno'
 
-            # Realizar el conteo
-            conteo[estado_code][tecnico_name] += 1
-            total_por_tecnico[tecnico_name] += 1
-            total_general += 1
+            if state_code not in states and state_code != "Ninguno":
+                state_code = 'Ninguno'
 
-        # Crear XLSX
+            if state_code not in ticket_count:
+                ticket_count[state_code] = {}
+                for emp in employees:
+                    ticket_count[state_code][emp.name] = 0
+
+            if technician_name not in total_by_technician:
+                technician_name = 'Unassigned'
+                if technician_name not in total_by_technician:
+                    total_by_technician[technician_name] = 0
+                    for state in ticket_count:
+                        ticket_count[state][technician_name] = 0
+
+            ticket_count[state_code][technician_name] += 1
+            total_by_technician[technician_name] += 1
+            total_overall += 1
+
+        # Create XLSX
         output = io.BytesIO()
         workbook = xlsxwriter.Workbook(output, {'in_memory': True})
-        worksheet = workbook.add_worksheet("Reporte Helpdesk")
+        worksheet = workbook.add_worksheet("Helpdesk Report")
 
         header_format = workbook.add_format({'bold': True, 'bg_color': '#D9E1F2', 'align': 'center'})
-        estado_format = workbook.add_format({'bg_color': '#FCE4D6', 'align': 'center'})
-        center = workbook.add_format({'align': 'center'})
+        state_format = workbook.add_format({'bg_color': '#FCE4D6', 'align': 'center'})
+        center_format = workbook.add_format({'align': 'center'})
         total_format = workbook.add_format({'bold': True, 'bg_color': '#BDD7EE', 'align': 'center'})
-        total_general_format = workbook.add_format({'bold': True, 'bg_color': '#FFC000', 'align': 'center'})
+        total_overall_format = workbook.add_format({'bold': True, 'bg_color': '#FFC000', 'align': 'center'})
 
-        # Obtener todos los técnicos (empleados seleccionados + 'Sin asignar')
-        todos_tecnicos = list(empleados.mapped('name'))
-        todos_tecnicos = list(dict.fromkeys(todos_tecnicos))  # Eliminar duplicados
-        todos_tecnicos.sort()
+        all_technicians = list(employees.mapped('name'))
+        all_technicians = list(dict.fromkeys(all_technicians))
+        all_technicians.sort()
 
-        worksheet.write(0, 0, "ESTADO / TÉCNICO", header_format)
-        for col, tecnico in enumerate(todos_tecnicos, start=1):
-            worksheet.write(0, col, tecnico, header_format)
-        worksheet.write(0, len(todos_tecnicos)+1, "TOTAL ESTADO", header_format)
+        worksheet.write(0, 0, "STATE / TECHNICIAN", header_format)
+        for col, technician in enumerate(all_technicians, start=1):
+            worksheet.write(0, col, technician, header_format)
+        worksheet.write(0, len(all_technicians) + 1, "TOTAL PER STATE", header_format)
 
-        for row, estado in enumerate(estados, start=1):
-            worksheet.write(row, 0, estado, estado_format)
-            total_estado = 0
-            for col, tecnico in enumerate(todos_tecnicos, start=1):
-                valor = conteo[estado].get(tecnico, 0)
-                worksheet.write_number(row, col, valor, center)
-                total_estado += valor
-            worksheet.write_number(row, len(todos_tecnicos)+1, total_estado, total_format)
+        # 🔹 Mover "Ninguno" al final de la lista de estados
+        if "Ninguno" in states:
+            states = [s for s in states if s != "Ninguno"] + ["Ninguno"]
+        else:
+            states = states + ["Ninguno"]
 
-        row_total = len(estados) + 1
-        worksheet.write(row_total, 0, "TOTAL POR TÉCNICO", total_format)
-        for col, tecnico in enumerate(todos_tecnicos, start=1):
-            worksheet.write_number(row_total, col, total_por_tecnico.get(tecnico, 0), total_format)
+        for row, state in enumerate(states, start=1):
+            worksheet.write(row, 0, state, state_format)
+            total_state = 0
+            for col, technician in enumerate(all_technicians, start=1):
+                value = ticket_count[state].get(technician, 0)
+                worksheet.write_number(row, col, value, center_format)
+                total_state += value
+            worksheet.write_number(row, len(all_technicians) + 1, total_state, total_format)
 
-        total_general_row = row_total + 1
+        row_total = len(states) + 1
+        worksheet.write(row_total, 0, "TOTAL PER TECHNICIAN", total_format)
+        for col, technician in enumerate(all_technicians, start=1):
+            worksheet.write_number(row_total, col, total_by_technician.get(technician, 0), total_format)
+
+        total_overall_row = row_total + 1
         worksheet.merge_range(
-            total_general_row, 0,
-            total_general_row, len(todos_tecnicos)+1,
-            f"TOTAL GENERAL: {total_general}",
-            total_general_format
+            total_overall_row, 0,
+            total_overall_row, len(all_technicians) + 1,
+            f"TOTAL OVERALL: {total_overall}",
+            total_overall_format
         )
 
-        fecha_row = total_general_row + 1
-        fecha_inicio = wizard.date_start.strftime("%d/%m/%Y") if wizard.date_start else "N/A"
-        fecha_fin = wizard.date_end.strftime("%d/%m/%Y") if wizard.date_end else "N/A"
-        texto_fechas = f"Reporte generado del {fecha_inicio} al {fecha_fin}"
+        date_row = total_overall_row + 1
+        start_date = wizard.date_start.strftime("%d/%m/%Y") if wizard.date_start else "N/A"
+        end_date = wizard.date_end.strftime("%d/%m/%Y") if wizard.date_end else "N/A"
+        date_text = f"Report generated from {start_date} to {end_date}"
         worksheet.merge_range(
-            fecha_row, 0,
-            fecha_row, len(todos_tecnicos)+1,
-            texto_fechas,
-            center
+            date_row, 0,
+            date_row, len(all_technicians) + 1,
+            date_text,
+            center_format
         )
 
         workbook.close()
         output.seek(0)
-        
+
         return output.read()

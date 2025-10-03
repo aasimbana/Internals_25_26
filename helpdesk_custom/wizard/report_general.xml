@@ -3,7 +3,7 @@
         <field name="name">helpdesk.report.general.form</field>
         <field name="model">helpdesk.report.general</field>
         <field name="arch" type="xml">
-            <form string="Reportes de Helpdesk">
+            <form string="General report">
                 <group>
                     <group>
                         <field name="company_id" readonly="1" help="Select the company for which you want to generate the report."/>
@@ -24,7 +24,7 @@
     </record>
 
     <record id="helpdesk_report_general_action" model="ir.actions.act_window">
-        <field name="name">Report general</field>
+        <field name="name">General report</field>
         <field name="res_model">helpdesk.report.general</field>
         <field name="view_mode">form</field>
         <field name="view_id" ref="helpdesk_custom.view_helpdesk_report_general_form"/>

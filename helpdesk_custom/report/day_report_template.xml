@@ -1,31 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Template del documento PDF -->
+    <!-- Template PDF -->
     <template id="day_report_template_document">
         <t t-call="web.external_layout">
             <main class="page">
-                <!-- Fecha -->
+                <!-- Date -->
                 <div style="width:100%; margin: 30px 0 25px 0; display:flex; justify-content:space-between; align-items:center; font-size:14px;">
                     <div style="text-align:left; font-size:18px; font-weight:bold; color:#366092;">
-                        Reporte por Día
+                        Report per day
                     </div>
                     <div style="text-align:right; font-style:italic; color:#444; white-space:nowrap;">
-                        <strong>Fecha:</strong> <t t-esc="data.get('start_date', 'N/A')"/>
+                        <strong>date:</strong> <t t-esc="data.get('start_date', 'N/A')"/>
                     </div>
                 </div>
 
-                <!-- Tabla principal -->
+                <!-- Main table -->
                 <table style="width:100%; border-collapse:collapse; border:1px solid #000; margin-bottom: 20px;">
                     <thead>
                         <tr style="background-color: #D9E1F2;">
-                            <th style="border:1px solid #000; padding:8px; text-align:left;"><strong>TÉCNICO</strong></th>
+                            <th style="border:1px solid #000; padding:8px; text-align:left;"><strong>TECHNICIAN</strong></th>
                             <th style="border:1px solid #000; padding:8px; text-align:center;"><strong>ASSIGNED</strong></th>
                             <th style="border:1px solid #000; padding:8px; text-align:center;"><strong>CLOSED</strong></th>
                             <th style="border:1px solid #000; padding:8px; text-align:center; background-color:#FF9999;"><strong>NEW</strong></th>
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- Filas por técnico -->
+                        <!-- Rows by coach -->
                         <t t-set="first_row" t-value="True"/>
                         <t t-foreach="data.get('employees', [])" t-as="emp">
                             <tr>
@@ -49,10 +49,10 @@
                             </tr>
                         </t>
 
-                        <!-- TOTAL CERRADOS -->
+                        <!-- TOTAL CLOSED -->
                         <tr style="background-color: #F2F2F2;">
                             <td style="border:1px solid #000; padding:8px; text-align:right; font-weight:bold;" colspan="2">
-                                TOTAL CERRADOS
+                                TOTAL CLOSED
                             </td>
                             <td style="border:1px solid #000; padding:8px; text-align:center; font-weight:bold;">
                                 <t t-esc="data.get('total_closed', 0)"/>
@@ -64,15 +64,15 @@
                     </tbody>
                 </table>
 
-                <!-- Fecha de generación -->
+                <!-- Generation date -->
                 <div style="text-align: center; margin-top: 30px; font-style: italic; color: #666;">
-                    <strong>Generado el:</strong> <t t-esc="data.get('generation_date', '')"/>
+                    <strong>Generated on:</strong> <t t-esc="data.get('generation_date', '')"/>
                 </div>
             </main>
         </t>
     </template>
 
-    <!-- Template principal -->
+    <!-- Template main -->
     <template id="day_report_template">
         <t t-call="web.html_container">
             <t t-call="helpdesk_custom.day_report_template_document"/>

@@ -5,7 +5,7 @@ class helpdesk_report_status(models.TransientModel):
     _name = 'helpdesk.report.status'
     _description = 'Helpdesk Report Status Wizard'
     
-    date_end = fields.Date(string="Fecha fin") 
+    date_end = fields.Date(string="Date end") 
     company_id = fields.Many2one(
         "res.company",
         string="Company",

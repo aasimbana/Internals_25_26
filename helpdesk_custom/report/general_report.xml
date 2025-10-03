@@ -6,8 +6,8 @@
         <field name="default" eval="False"/>
         <field name="format">A4</field>
         <field name="orientation">Landscape</field>
-        <field name="margin_top">15</field>
-        <field name="margin_bottom">15</field>
+        <field name="margin_top">40</field>
+        <field name="margin_bottom">20</field>
         <field name="margin_left">10</field>
         <field name="margin_right">10</field>
     </record>
@@ -19,5 +19,6 @@
         <field name="report_type">qweb-pdf</field>
         <field name="report_name">helpdesk_custom.general_report_template</field>
         <field name="report_file">helpdesk_custom.general_report_template</field>
+        <field name="paperformat_id" ref="paperformat_general_report_landscape"/>
     </record>
 </odoo>
