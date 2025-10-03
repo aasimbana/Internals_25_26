@@ -95,6 +95,7 @@
                                         <th style="width:10%">Communication
                                         </th>
                                         <th style="width:10%">Partner</th>
+                                        <th style="width:10%">Analytic</th>
                                         <th style="width:10%">Debit</th>
                                         <th style="width:10%">Credit</th>
                                         <th style="width:10%">Balance</th>
@@ -123,6 +124,9 @@
                                                 </span>
                                             </div>
                                         </th>
+                                        <th
+                                            style="width:10% border:0px solid transparent;"
+                                        />
                                         <th
                                             style="width:10% border:0px solid transparent;"
                                         />
@@ -205,6 +209,14 @@
                                                     <span>
                                                         <t t-if="line.get('partner_id')">
                                                             <t t-esc="line['partner_id'][1]"/>
+                                                        </t>
+                                                    </span>
+                                                </th>
+                                                <!-- Analytic -->
+                                                <th style="width:10%">
+                                                    <span>
+                                                        <t t-if="line.get('analytic_id')">
+                                                            <t t-esc="line['analytic_id'][1]"/>
                                                         </t>
                                                     </span>
                                                 </th>

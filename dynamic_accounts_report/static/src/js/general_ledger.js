@@ -1,26 +1,28 @@
-/** @odoo-module */
+/** @odoo-module **/
 
-const { Component } = owl;
+import { Component, useRef, useState } from "@odoo/owl";
 import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
-import { useRef, useState } from "@odoo/owl";
 import { BlockUI } from "@web/core/ui/block_ui";
 import { download } from "@web/core/network/download";
 
-// Define action registry at the top level
+
 const actionRegistry = registry.category("actions");
 
-class GeneralLedger extends owl.Component {
+class GeneralLedger extends Component {
     setup() {
-        this.notification = useService("notification");
         super.setup(...arguments);
-        this.initial_render = true;
+        this.notification = useService("notification");
         this.orm = useService("orm");
         this.action = useService("action");
+        this.ui = useService("ui");
+
+
         this.tbody = useRef("tbody");
         this.date_range_to = useRef("date_to");
         this.date_range_from = useRef("date_from");
         this.unfoldButton = useRef("unfoldButton");
+
         this.state = useState({
             account: null,
             account_data: null,
@@ -38,7 +40,7 @@ class GeneralLedger extends owl.Component {
             filteredAccounts: [],
             selected_account_list: [],
             selected_account_rec: [],
-            date_range: { start_date: null, end_date: null }, //siempre objeto
+            date_range: { start_date: null, end_date: null },
             date_preset: null,
             options: null,
             method: { accrual: true },
@@ -50,13 +52,14 @@ class GeneralLedger extends owl.Component {
             account_list: null,
             account_total_list: null,
         });
+
         this.loadInitialOptions();
     }
 
     setDateRange(rangeType) {
         const today = new Date();
-        let startDate, endDate;
         const y = today.getFullYear();
+        let startDate, endDate;
 
         if (rangeType === "thisMonth") {
             const m = today.getMonth();
@@ -66,104 +69,93 @@ class GeneralLedger extends owl.Component {
             const m = today.getMonth() - 1;
             startDate = new Date(y, m, 1);
             endDate = new Date(y, m + 1, 0);
-        }else {
+        } else {
             return;
         }
-
         const ymd = (d) => {
             const yyyy = d.getFullYear();
-            const mm = String(d.getMonth() + 1).padStart(2, '0');
-            const dd = String(d.getDate()).padStart(2, '0');
-            return `${yyyy}-${mm}-${dd}`;   
-        }
+            const mm = String(d.getMonth() + 1).padStart(2, "0");
+            const dd = String(d.getDate()).padStart(2, "0");
+            return `${yyyy}-${mm}-${dd}`;
+        };
 
         const startStr = ymd(startDate);
         const endStr = ymd(endDate);
 
-        this.state.date_range = {start_date: startStr, end_date: endStr};   
-        this.state.range_label =
-            `${startStr.slice(8,10)}/${startStr.slice(5,7)}/${startStr.slice(0,4)} - ` +
-            `${endStr.slice(8,10)}/${endStr.slice(5,7)}/${endStr.slice(0,4)}`;
-        if (this.date_range_from?.el) this.date_range_from.el.value = startStr;
-        if (this.date_range_to?.el) this.date_range_to.el.value = endStr;
-    };
+        this.state.date_range = { start_date: startStr, end_date: endStr };
+        this.state.range_label = `${startStr.slice(8,10)}/${startStr.slice(5,7)}/${startStr.slice(0,4)} - ${endStr.slice(8,10)}/${endStr.slice(5,7)}/${endStr.slice(0,4)}`;
 
+        if (this.date_range_from.el) this.date_range_from.el.value = startStr;
+        if (this.date_range_to.el) this.date_range_to.el.value = endStr;
+    }
 
     updateFilter(ev) {
         const t = ev?.target;
         if (!t) return;
-      
-        // Asegura objeto
         if (!this.state.date_range || typeof this.state.date_range !== "object") {
-          this.state.date_range = { start_date: null, end_date: null };
+            this.state.date_range = { start_date: null, end_date: null };
         }
         const normalize = (s) => {
             if (!s) return null;
-            // acepta "YYYY-MM-DD" o "DD/MM/YYYY"
-            if (s.includes("-")) return s; // ya está ISO
+            if (s.includes("-")) return s; // ISO format
             if (s.includes("/")) {
-              const [dd, mm, yyyy] = s.split("/").map(Number);
-              return `${yyyy}-${String(mm).padStart(2,"0")}-${String(dd).padStart(2,"0")}`;
+                const [dd, mm, yyyy] = s.split("/").map(Number);
+                return `${yyyy}-${String(mm).padStart(2,"0")}-${String(dd).padStart(2,"0")}`;
             }
-            return s; // fallback
-          };
-      
+            return s;
+        };
+
         if (t.name === "start_date") {
-          this.state.date_range.start_date = normalize(t.value) || null; // "YYYY-MM-DD"
+            this.state.date_range.start_date = normalize(t.value) || null;
         } else if (t.name === "end_date") {
-          this.state.date_range.end_date = normalize(t.value) || null;
+            this.state.date_range.end_date = normalize(t.value) || null;
         } else {
-          // Si usas presets con data-value:
-          const dv = t.getAttribute?.("data-value");
-          if (dv) {
-            // guarda el preset como string en state.date_range (filter ya lo maneja)
-            this.state.date_range = dv; // "month" | "year" | ...
-            this.state.dateError = null;
-            this.state.exportDisabled = false;
-          }
+            const dv = t.getAttribute?.("data-value");
+            if (dv) {
+                this.state.date_range = dv;
+                this.state.dateError = null;
+                this.state.exportDisabled = false;
+            }
         }
-      
-        // No RPC aquí
         this.render(true);
-      }
-      
+    }
+
     validateDateRange() {
         const dr = this.state.date_range;
-        // Si el date_range es un preset (string), no hay nada que validar
         if (!dr || typeof dr === "string") {
             this.state.dateError = null;
             this.state.exportDisabled = false;
             return true;
         }
         const { start_date, end_date } = dr || {};
+
         if (!start_date || !end_date) {
-            // Si falta una de las dos, no bloqueamos, pero tampoco hay error
             this.state.dateError = null;
             this.state.exportDisabled = false;
             return true;
         }
+
         const parseLocal = (s) => {
-    if (!s) return null;
-    if (s.includes("-")) { // YYYY-MM-DD
-      const [y, m, d] = s.split("-").map(Number);
-      return new Date(y, m - 1, d);
-    }
-    if (s.includes("/")) { // DD/MM/YYYY
-      const [d, m, y] = s.split("/").map(Number);
-      return new Date(y, m - 1, d);
-    }
-    return new Date(s);
-  };
+            if (!s) return null;
+            if (s.includes("-")) {
+                const [y,m,d] = s.split("-").map(Number);
+                return new Date(y,m-1,d);
+            }
+            if (s.includes("/")) {
+                const [d,m,y] = s.split("/").map(Number);
+                return new Date(y,m-1,d);
+            }
+            return new Date(s);
+        };
 
-    const s = parseLocal(start_date);
-    const e = parseLocal(end_date);
+        const s = parseLocal(start_date);
+        const e = parseLocal(end_date);
 
-    if (isNaN(s?.getTime()) || isNaN(e?.getTime())) {
-    this.state.dateError = "Formato de fecha inválido.";
-    this.state.exportDisabled = true;
-    return false;
-  }
-        
+        if (isNaN(s?.getTime()) || isNaN(e?.getTime())) {
+            this.state.dateError = "Formato de fecha inválido.";
+            this.state.exportDisabled = true;
+            return false;
+        }
         if (e < s) {
             this.state.dateError = "La fecha final no puede ser menor que la inicial.";
             this.state.exportDisabled = true;
@@ -175,440 +167,388 @@ class GeneralLedger extends owl.Component {
     }
 
     async loadInitialOptions() {
-        // Solo para catálogos iniciales
-        const data = await this.orm.call(
-            "account.general.ledger",
-            "view_report",
-            [null, null]
-        );
-
+        const data = await this.orm.call("account.general.ledger", "view_report", [null, null]);
         this.state.journals = data.journal_ids || [];
         this.state.analytics = data.analytic_ids || [];
         this.state.accounts = data.account_ids || [];
-        
-        const base = (this.state.accounts || []).filter(a => a && a.id != null);
-        this.state.all_accounts     = [{ id: null, name: "ALL" }, ...base];
-        this.state.filteredAccounts = this.state.all_accounts.slice();
-    this.render(true);
-    }
-    
-    selectAccount(e) {
-        const raw = (e.currentTarget || e.target)?.dataset?.value;
-        if (raw === "null") {
-            this.state.selected_account_rec = [];
-            
-        } else {
-            const id = Number(raw);
-            const list = this.state.accounts || [];
-            const sel = list.find(a => a?.id === id || String(a?.id) === raw);
-            this.state.selected_account_rec = sel ? [sel] : []; 
-        }
-        if(typeof this.load_data === "function") this.load_data(); //Llama a load_data para cargar todas las cuentas
-        
+        const base = this.state.accounts.filter(a => a && a.id != null);
+        this.state.all_accounts = [{ id: null, name: "ALL" }, ...base];
+        this.state.filteredAccounts = [...this.state.all_accounts];
         this.render(true);
     }
 
-    // Filtra las cuentas según el valor del campo de búsqueda
-    async updateAccountList(event) {
-        const value = (event?.target?.value || "").toString().toLowerCase().trim();
-        this.state.search = value;
-
-        const base = (this.state.accounts || []).filter(a => a && a.id != null);
-
-    if (!value) {
-       
-        this.state.filteredAccounts = [{id:null, name:"ALL"}, ...base];
-    } else {
-       
-        const filtered = base.filter(acc => {
-            const name = (acc.name || "").toLowerCase();
-            const code = (acc.code || "").toLowerCase();
-            return name.includes(value) || code.includes(value);
-        });
-        this.state.filteredAccounts = [{id:null, name:"ALL"}, ...filtered];
+    selectAccount(e) {
+        const raw = e.currentTarget?.dataset?.value;
+        if (raw === "null") {
+            this.state.selected_account_rec = [];
+        } else {
+            const id = Number(raw);
+            const sel = this.state.accounts.find(a => a?.id === id || String(a?.id) === raw);
+            this.state.selected_account_rec = sel ? [sel] : [];
+        }
+        if (typeof this.load_data === "function") this.load_data();
+        this.render(true);
     }
 
-    this.render(true); 
+    async updateAccountList(event) {
+        const value = (event?.target?.value || "").toLowerCase().trim();
+        this.state.search = value;
+        const base = this.state.accounts.filter(a => a && a.id != null);
+
+        if (!value) {
+            this.state.filteredAccounts = [{ id:null, name:"ALL" }, ...base];
+        } else {
+            const filtered = base.filter(acc => {
+                const name = (acc.name || "").toLowerCase();
+                const code = (acc.code || "").toLowerCase();
+                return name.includes(value) || code.includes(value);
+            });
+            this.state.filteredAccounts = [{ id:null, name:"ALL" }, ...filtered];
+        }
+        this.render(true);
     }
 
     _onAccountPressEnterKey() {
         this.updateAccountList({ target: { value: this.state.search || "" } });
-        // if (this.state.search) {
-        //     this.filterAccounts(); // Realiza el filtro
-        // }
     }
-    
+
     filterAccounts() {
         const value = (this.state.search || "").toLowerCase().trim();
-        const base = (this.state.accounts || []).filter(a => a && a.id != null);
-      
+        const base = this.state.accounts.filter(a => a && a.id != null);
         const filtered = value
-          ? base.filter(acc =>
-              (acc.name || "").toLowerCase().includes(value) ||
-              (acc.code || "").toLowerCase().includes(value)
+            ? base.filter(acc =>
+                (acc.name || "").toLowerCase().includes(value) ||
+                (acc.code || "").toLowerCase().includes(value)
             )
-          : base;
-      
-        // mantiene ALL al inicio y NO toca this.state.accounts
-        this.state.filteredAccounts = [{ id: null, name: "ALL" }, ...filtered];
-      
+            : base;
+        this.state.filteredAccounts = [{ id:null, name:"ALL" }, ...filtered];
         this.render(true);
-        // const searchQuery = this.state.search ? this.state.search.toLowerCase() : '';
-        // if (searchQuery) {
-        //     this.state.filteredAccounts = this.state.all_accounts.filter(
-        //         (account) =>
-        //             (account.name && account.name.toLowerCase().includes(searchQuery)) ||
-        //             (account.code && account.code.toLowerCase().includes(searchQuery))
-        //     );
-        //     this.state.accounts = this.state.filteredAccounts; // Actualizamos la lista con las cuentas filtradas
-        // } else {
-        //     this.state.filteredAccounts = [...this.state.all_accounts];
-        // }
-        // this.render(true);
     }
-     
-    // Método para cargar todas las cuentas
+
     async fetchAccounts() {
-        const data = await this.orm.call(
-            "account.general.ledger",
-            "view_report",
-            [null, null]
-        );
+        const data = await this.orm.call("account.general.ledger", "view_report", [null, null]);
         const base = (data.account_ids || []).filter(a => a && a.id != null);
-        this.state.accounts = base; 
-
-        this.state.all_accounts = [{ id: null, name:"ALL"}, ...base];
-        this.state.filteredAccounts = this.state.all_accounts.slice();
-
+        this.state.accounts = base;
+        this.state.all_accounts = [{ id:null, name:"ALL" }, ...base];
+        this.state.filteredAccounts = [...this.state.all_accounts];
         this.render(true);
     }
+
+    async _annotateAnalyticLabels(cleaned_account_data) {
+        const alIds = new Set();
+        for (const lines of Object.values(cleaned_account_data)) {
+            for (const l of lines) {
+                (l.analytic_line_ids || []).forEach(id => alIds.add(id));
+            }
+        }
+        if (!alIds.size) return;
+
+        const aLines = await this.orm.read("account.analytic.line", [...alIds], ["account_id"]);
+
+        const aLineToAccName = {};
+        for (const r of aLines || []) {
+            aLineToAccName[r.id] = (r.account_id && r.account_id[1]) || "";
+        }
+
+        for (const lines of Object.values(cleaned_account_data)) {
+            for (const l of lines) {
+                const names = Array.from(
+                    new Set(
+                        (l.analytic_line_ids || []).map(id => aLineToAccName[id]).filter(Boolean)
+                    )
+                );
+                l._analytic_label = names.join(", ");
+            }
+        }
+    }
+
     async printPdf(ev) {
         ev.preventDefault();
-        // No exportar si hay error de fechas
         if (this.state.exportDisabled) {
-            this.notification?.add(this.state.dateError || "Rango de fechas inválido.", { type: "danger" });
+            this.notification.add(this.state.dateError || "Rango de fechas inválido.", { type: "danger" });
             return;
         }
-        
-        var self = this;
-        let totals = {
+        const totals = {
             total_debit: this.state.total_debit,
             total_credit: this.state.total_credit,
             currency: this.state.currency,
         };
-        var action_title = self.props.action.display_name;
-        return self.action.doAction({
+        const action_title = this.props.action.display_name;
+
+        return this.action.doAction({
             type: "ir.actions.report",
             report_type: "qweb-pdf",
             report_name: "dynamic_accounts_report.general_ledger",
             report_file: "dynamic_accounts_report.general_ledger",
             data: {
-                account: self.state.account,
-                data: self.state.account_data,
-                total: self.state.account_total,
+
+                data: this.state,
+                account: this.state.account,
+                data: this.state.account_data,
+                analytics: this.state.analytics,
+                total: this.state.account_total,
                 title: action_title,
                 filters: this.filter(),
                 grand_total: totals,
-                report_name: self.props.action.display_name,
+                report_name: action_title,
+
             },
-            display_name: self.props.action.display_name,
+           
+            display_name: action_title,
+        
         });
+        
     }
+
     async print_xlsx() {
-        // No exportar si hay error de fechas
         if (this.state.exportDisabled) {
-            this.notification?.add(this.state.dateError || "Rango de fechas inválido.", { type: "danger" });
+            this.notification.add(this.state.dateError || "Rango de fechas inválido.", { type: "danger" });
             return;
         }
-        var self = this;
-        let totals = {
-            total_debit: this.state.total_debit,
-            total_credit: this.state.total_credit,
-            currency: this.state.currency,
-        };
-        var action_title = self.props.action.display_name;
-        var datas = {
-            account: self.state.account,
-            data: self.state.account_data,
-            total: self.state.account_total,
-            title: action_title,
-            filters: this.filter(),
-            grand_total: totals,
-        };
-        var action = {
-            data: {
-                model: "account.general.ledger",
-                data: JSON.stringify(datas),
-                output_format: "xlsx",
-                report_action: self.props.action.xml_id,
-                report_name: action_title,
-            },
-        };
-        BlockUI;
-        await download({
-            url: "/xlsx_report",
-            data: action.data,
-            complete: () => unblockUI,
-            error: (error) => self.call("crash_manager", "rpc_error", error),
-        });
+    
+        this.ui.block();
+        try {
+            // 1) Deriva nombres de analíticas (si ya tienes analytics en state)
+            const analyticNames = Array.from(this.state.selected_analytic_list || [])
+                .map((id) => (this.state.analytics || []).find((a) => a.id === id))
+                .filter(Boolean)
+                .map((a) => a.name);
+    
+            const action_title = this.props.action.display_name;
+            const totals = {
+                total_debit: this.state.total_debit,
+                total_credit: this.state.total_credit,
+                currency: this.state.currency,
+            };
+    
+            // 2) Incluye analítica en filters y también manda las líneas con _analytic_label si ya las tienes
+            const datas = {
+                account: this.state.account,
+                data: this.state.account_data,
+                total: this.state.account_total,
+                title: action_title,
+                filters: {
+                    ...this.filter(),                         // lo que ya mandabas
+                    analytic_ids: Array.from(this.state.selected_analytic_list || []),
+                    analytic_names: analyticNames,            // <- NUEVO
+                },
+                grand_total: totals,
+                lines: this.state.account_data_list || [],     // <- por si tu xlsx usa las líneas ya anotadas
+            };
+    
+            await download({
+                url: "/xlsx_report",
+                data: {
+                    model: "account.general.ledger",
+                    data: JSON.stringify(datas),              // <- ahora el JSON ya lleva analítica y líneas
+                    output_format: "xlsx",
+                    report_action: this.props.action.xml_id,
+                    report_name: action_title,
+                    // mantener si tu controlador actual lo usa:
+                    lines: this.state.account_data_list || [],
+                },
+            });
+        } finally {
+            this.ui.unblock();
+        }
     }
+    
+
     gotoJournalEntry(ev) {
-        
         return this.action.doAction({
             type: "ir.actions.act_window",
             res_model: "account.move",
-            res_id: parseInt(ev.target.attributes["data-id"].value, 10),
+            res_id: parseInt(ev.target.dataset.id, 10),
             views: [[false, "form"]],
             target: "current",
         });
     }
+
     gotoJournalItem(ev) {
-        
         return this.action.doAction({
             type: "ir.actions.act_window",
             res_model: "account.move.line",
             name: "Journal Items",
             views: [[false, "list"]],
-            domain: [
-                [
-                    "account_id",
-                    "=",
-                    parseInt(ev.target.attributes["data-id"].value, 10),
-                ],
-            ],
+            domain: [["account_id", "=", parseInt(ev.target.dataset.id, 10)]],
             target: "current",
         });
     }
+
     getDomain() {
         return [];
     }
-    async applyFilter() {
-        debugger;
 
+    async applyFilter() {
         this.state.account = null;
         this.state.account_data = null;
         this.state.account_total = null;
         this.state.filter_applied = true;
 
-        let account_list = [];
-        let account_total = "";
-        let totalDebitSum = 0;
-        let totalCreditSum = 0;
-
-        // const target = val?.target;
-        // const dataValue = target?.getAttribute?.("data-value");
-        // const inputName = target?.name;
-
-        
         this.state.selected_journal_list = [...new Set(this.state.selected_journal_list)];
         this.state.selected_analytic_list = [...new Set(this.state.selected_analytic_list)];
         this.state.selected_account_list = [...new Set(this.state.selected_account_list)];
 
-        // si la validación falla
         if (typeof this.state.date_range === "object" && !this.validateDateRange()) {
-            this.notification?.add(this.state.dateError || "Rango de fechas inválido.", { type: "danger" });
+            this.notification.add(this.state.dateError || "Rango de fechas inválido.", { type: "danger" });
             this.render(true);
             return;
         }
 
-        //  Preparar parámetros con fallbacks seguros 
         const journal_ids = Array.from(this.state.selected_journal_list || []);
         const rawDR = this.state.date_range || {};
+        const isEmptyDateRange = typeof rawDR === "object" && (!rawDR.start_date || rawDR.start_date === "") && (!rawDR.end_date || rawDR.end_date === "");
 
-        const isEmptyDateRange =
-            typeof rawDR === "object" &&
-            (!rawDR.start_date || rawDR.start_date === "") &&
-            (!rawDR.end_date   || rawDR.end_date   === "");
         const date_range = isEmptyDateRange ? null : rawDR;
-       
-        const options = this.state.options || {};           // el backend ya interpreta {} → posted
+        const options = this.state.options || {};
         const analytic = Array.from(this.state.selected_analytic_list || []);
         const method = this.state.method || { accrual: true };
-
-        //
-        const account_ids = (this.state.selected_account_list?.length
+        const account_ids = this.state.selected_account_list.length
             ? [...this.state.selected_account_list]
-            : (this.state.selected_account_rec || []).map((a) => a.id));
-        
-        debugger;
-        
-        
+            : (this.state.selected_account_rec || []).map(a => a.id);
 
-        // --- 4) Llamada al servidor ---
         const filtered_data = await this.orm.call(
             "account.general.ledger",
             "get_filter_values",
             [journal_ids, date_range, options, analytic, method, account_ids]
         );
 
-        // (Opcional) refrescar catálogos si vienen en la respuesta
         this.state.journals = filtered_data.journal_ids || this.state.journals;
         this.state.analytics = filtered_data.analytic_ids || this.state.analytics;
         this.state.accounts = filtered_data.account_ids || this.state.accounts;
 
-        const base = (this.state.accounts || []).filter(a => a && a.id != null);
+        const base = this.state.accounts.filter(a => a && a.id != null);
         this.state.all_accounts = [{ id: null, name: "ALL" }, ...base];
         this.state.filteredAccounts = [{ id: null, name: "ALL" }, ...base];
-        // const q = (this.state.search || "").toLowerCase();
 
-        // const filteredLocal = q
-        //   ? base.filter(a =>
-        //       (a.name || "").toLowerCase().includes(q) ||
-        //       (a.code || "").toLowerCase().includes(q)
-        //     )
-        //   : base;
-
-        
-
-        // --- 5) Procesar totales y líneas ---
+        let totalDebitSum = 0;
+        let totalCreditSum = 0;
         const account_totals = filtered_data.account_totals || {};
         for (const accTot of Object.values(account_totals)) {
             totalDebitSum += accTot?.total_debit || 0;
             totalCreditSum += accTot?.total_credit || 0;
         }
 
-        // Limpiar/normalizar estructura de líneas por cuenta
         const cleaned_account_data = {};
-        for (const [key, value] of Object.entries(filtered_data)) 
-            
-            {
-            if (["account_totals","journal_ids","analytic_ids","account_ids"].includes(key)) continue;
-                account_list.push(key);
-            
+        const account_list = [];
+        for (const [key, value] of Object.entries(filtered_data)) {
+            if (["account_totals", "journal_ids", "analytic_ids", "account_ids"].includes(key)) continue;
+            account_list.push(key);
             if (Array.isArray(value) && value.length) {
-                // value es lista de listas (cada move_line.read devuelve una lista)
-                const flat = value.flat(); // profundidad 1 basta
-                cleaned_account_data[key] = flat.map((v) => (Array.isArray(v) ? v[0] : v));
+                const flat = value.flat();
+                cleaned_account_data[key] = flat.map(v => (Array.isArray(v) ? v[0] : v));
             } else {
                 cleaned_account_data[key] = [];
             }
         }
 
-        account_list = [...new Set(account_list)];
+        await this._annotateAnalyticLabels(cleaned_account_data);
+
         this.state.currency = (Object.values(account_totals)[0] || {}).currency_id || "";
-        this.state.account = account_list;
+        this.state.account = [...new Set(account_list)];
         this.state.account_data = cleaned_account_data;
         this.state.account_total = account_totals;
         this.state.total_debit = totalDebitSum.toFixed(2);
         this.state.total_credit = totalCreditSum.toFixed(2);
 
-        // --- 6) Limpiar toggle de "desplegar todo" si estaba activo ---
-        if (this.unfoldButton?.el?.classList?.contains("selected-filter")) {
+        if (this.unfoldButton.el?.classList?.contains("selected-filter")) {
             this.unfoldButton.el.classList.remove("selected-filter");
         }
-
-        // Redibujar
         this.render(true);
     }
 
     async unfoldAll(ev) {
-        debugger;
         if (!ev.target.classList.contains("selected-filter")) {
-            for (var length = 0; length < this.tbody.el.children.length; length++) {
-                $(this.tbody.el.children[length])[0].classList.add("show");
+            for (const child of this.tbody.el.children) {
+                child.classList.add("show");
             }
             ev.target.classList.add("selected-filter");
         } else {
-            for (var length = 0; length < this.tbody.el.children.length; length++) {
-                $(this.tbody.el.children[length])[0].classList.remove("show");
+            for (const child of this.tbody.el.children) {
+                child.classList.remove("show");
             }
             ev.target.classList.remove("selected-filter");
         }
     }
+
     filter() {
-        debugger;
-        var self = this;
-        let startDate, endDate;
-        let startMonth, startDay, startYear, endMonth, endDay, endYear;
-    
-        const pad = (n) =>String(n).padStart(2, "0");
-        const parseLocal = (s) => {
+        const pad = n => String(n).padStart(2, "0");
+        const parseLocal = s => {
             if (!s) return null;
             if (s.includes("-")) {
-                const [y, m, d] = s.split("-").map(Number);
-                return new Date(y, m - 1, d);
+                const [y,m,d] = s.split("-").map(Number);
+                return new Date(y,m-1,d);
             }
-            if (s.includes("/")){
-                const [d, m, y] = s.split("/").map(Number);
-                return new Date(y, m -1, d);
+            if (s.includes("/")) {
+                const [d,m,y] = s.split("/").map(Number);
+                return new Date(y,m-1,d);
             }
             return new Date(s);
         };
 
-        const selectedJournalIDs = Array.from(self.state.selected_journal_list || []);
+        const selectedJournalIDs = Array.from(this.state.selected_journal_list || []);
         const selectedJournalNames = selectedJournalIDs
-            .map((journalID) => {
-                const j = (self.state.journals || []).find((jj) => jj.id === journalID);
+            .map(journalID => {
+                const j = (this.state.journals || []).find(jj => jj.id === journalID);
                 return j ? j.name : "";
             })
             .filter(Boolean);
-        if (self.state.date_range) {
+
+        let startDate, endDate;
+        if (this.state.date_range) {
             const today = new Date();
-            if (self.state.date_range === "quarter") {
+            if (this.state.date_range === "quarter") {
                 const currentQuarter = Math.floor(today.getMonth() / 3);
                 startDate = new Date(today.getFullYear(), currentQuarter * 3, 1);
                 endDate = new Date(today.getFullYear(), (currentQuarter + 1) * 3, 0);
-            } else if (self.state.date_range === "month") {
+            } else if (this.state.date_range === "month") {
                 startDate = new Date(today.getFullYear(), today.getMonth(), 1);
                 endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-            } else if (self.state.date_range === "last-month") {
+            } else if (this.state.date_range === "last-month") {
                 startDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
                 endDate = new Date(today.getFullYear(), today.getMonth(), 0);
-            } else if (self.state.date_range === "last-quarter") {
+            } else if (this.state.date_range === "last-quarter") {
                 const lastQuarter = Math.floor((today.getMonth() - 3) / 3);
                 startDate = new Date(today.getFullYear(), lastQuarter * 3, 1);
                 endDate = new Date(today.getFullYear(), (lastQuarter + 1) * 3, 0);
             } else {
-                startDate = self.state.date_range.start_date ? parseLocal(self.state.date_range.start_date) : null;
-                endDate = self.state.date_range.end_date ? parseLocal(self.state.date_range.end_date) : null;
-            }
-            // Get the date components for start and end dates
-    
-            if (startDate) {
-                startYear = startDate.getFullYear();
-                startMonth = startDate.getMonth() + 1;
-                startDay = startDate.getDate();
-                
-            }
-            if (endDate) { 
-                endYear = endDate.getFullYear();
-                endMonth = endDate.getMonth() + 1;
-                endDay = endDate.getDate();
+                startDate = this.state.date_range.start_date ? parseLocal(this.state.date_range.start_date) : null;
+                endDate = this.state.date_range.end_date ? parseLocal(this.state.date_range.end_date) : null;
             }
         }
-        const selectedAnalyticIDs = Array.from(self.state.selected_analytic_list || []);
-        const selectedAnalyticNames = selectedAnalyticIDs
-            .map((analyticID) => {
-                const analytic = (self.state.analytics || []).find((a) => a.id === analyticID);
-                return analytic ? analytic.name : "";
-            })
-            .filter(Boolean);
 
-        const filters = {
+        const padDate = date => ({
+            year: date.getFullYear(),
+            month: pad(date.getMonth() + 1),
+            day: pad(date.getDate()),
+        });
+
+        let filters = {
             journal: selectedJournalNames,
-            analytic: selectedAnalyticNames,
-            account: self.state.selected_account_rec,
-            options: self.state.options,
+            analytic: Array.from(this.state.selected_analytic_list || []).map(id => {
+                const analytic = (this.state.analytics || []).find(a => a.id === id);
+                return analytic ? analytic.name : "";
+            }).filter(Boolean),
+            account: this.state.selected_account_rec,
+            options: this.state.options,
             start_date: null,
             end_date: null,
         };
-      
-        if (
-            startYear !== undefined &&
-            startMonth !== undefined &&
-            startDay !== undefined &&
-            endYear !== undefined &&
-            endMonth !== undefined &&
-            endDay !== undefined
-        ) {
-            filters["start_date"] = `${pad(startDay)}/${pad(startMonth)}/${startYear}`;
-            filters["end_date"]   = `${pad(endDay)}/${pad(endMonth)}/${endYear}`;
+
+        if (startDate && endDate) {
+            const s = padDate(startDate);
+            const e = padDate(endDate);
+            filters.start_date = `${s.day}/${s.month}/${s.year}`;
+            filters.end_date = `${e.day}/${e.month}/${e.year}`;
         }
         return filters;
     }
 }
-    GeneralLedger.defaultProps = {
-        resIds: [],
-    };
-    GeneralLedger.template = "gl_template_new";
-    actionRegistry.add("gen_l", GeneralLedger);
+
+GeneralLedger.defaultProps = {
+    resIds: [],
+};
+
+GeneralLedger.template = "gl_template_new";
+
+actionRegistry.add("gen_l", GeneralLedger);
