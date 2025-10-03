@@ -274,13 +274,13 @@
                                 </a>
                                 <div class="dropdown-menu" role="menu">
                                     <div class="list-group">
-                                        <button
+                                        <!-- <button
                                             class="report-filter-button"
                                             t-att-data-value="'draft'"
                                             type="button"
                                         >
                                             Include Draft Entries
-                                        </button>
+                                        </button> -->
                                         <button
                                             class="report-filter-button"
                                             type="button"
@@ -289,13 +289,13 @@
                                         >
                                             Unfold All
                                         </button>
-                                        <button
+                                        <!-- <button
                                             class="report-filter-button"
                                             t-att-data-value="'cash-basis'"
                                             type="button"
                                         >
                                             Cash basis method
-                                        </button>
+                                        </button> -->
                                     </div>
                                 </div>
                             </div>
@@ -329,6 +329,7 @@
                                         <th>Date</th>
                                         <th>Label</th>
                                         <th>Partner</th>
+                                        <th>Analítica</th>
                                         <th>Debit</th>
                                         <th>Credit</th>
                                         <th>Balance</th>
@@ -377,6 +378,7 @@
                                                 </th>
                                 
                                                 <!-- Columnas de totales por cuenta -->
+                                                <th/>
                                                 <th/>
                                                 <th/>
                                                 <th/>
@@ -435,6 +437,13 @@
                                                         </th>
                                                         <th>
                                                             <span>
+                                                                <t t-esc="(line._analytic_label) or (line.analytic_account_id and line.analytic_account_id[1]) or ''"/>
+
+                                                            </span>
+                                                          </th>
+                                                          
+                                                        <th>
+                                                            <span>
                                                                 <t t-if="line.debit" t-esc="state.account_total[account]['currency_id']"/>
                                                                 <t t-if="line.debit" t-esc="line.debit"/>
                                                             </span>
@@ -461,7 +470,7 @@
                                         <!-- Totales generales -->
                                         <tr>
                                             <th/>
-                                            <th colspan="8" class="o_heading">Total</th>
+                                            <th colspan="9" class="o_heading">Total</th>
                                             <th class="o_heading">
                                                 <t t-esc="state.currency"/><t t-out="state.total_debit"/>
                                             </th>

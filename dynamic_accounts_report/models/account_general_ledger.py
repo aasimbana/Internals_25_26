@@ -168,11 +168,20 @@ class AccountGeneralLedger(models.TransientModel):
                         "partner_id",
                         "account_id",
                         "journal_id",
+                        "analytic_distribution",
                         "move_id",
                         "analytic_line_ids",
                     ]
                 )
-                move_line_list.append(move_line_data)
+                analytic_account_id = False
+                analytic_account_name = ""
+                if move_line.analytic_distribution:
+                    analytic_account_id = int(list(move_line.analytic_distribution.keys())[0])
+                    analytic_account = self.env['account.analytic.account'].browse(analytic_account_id)
+                    analytic_account_name = analytic_account.name if analytic_account.exists() else ""
+
+                move_line_data[0]['analytic_id'] = [analytic_account_id, analytic_account_name] if analytic_account_id else False
+                move_line_list.append(move_line_data[0])
             account_dict[account.display_name] = move_line_list
             currency_id = self.env.company.currency_id.symbol
             account_totals[account.display_name] = {
@@ -263,32 +272,33 @@ class AccountGeneralLedger(models.TransientModel):
                 sheet.write(8, col + 1, "Date", sub_heading)
                 sheet.merge_range("C9:E9", "Communication", sub_heading)
                 sheet.merge_range("F9:G9", "Partner", sub_heading)
-                sheet.merge_range("H9:I9", "Debit", sub_heading)
-                sheet.merge_range("J9:K9", "Credit", sub_heading)
-                sheet.merge_range("L9:M9", "Balance", sub_heading)
+                sheet.merge_range("H9:I9", "Analytic", sub_heading)
+                sheet.merge_range("J9:K9", "Debit", sub_heading)
+                sheet.merge_range("L9:M9", "Credit", sub_heading)
+                sheet.merge_range("N9:O9", "Balance", sub_heading)
+                # Dentro del if report_action ... antes del bucle de cuentas:
                 row = 8
                 for account in data["account"]:
                     row += 1
                     sheet.write(row, col, account, txt_name)
                     sheet.write(row, col + 1, " ", txt_name)
-                    sheet.merge_range(row, col + 2, row, col + 4, " ", txt_name)
-                    sheet.merge_range(row, col + 5, row, col + 6, " ", txt_name)
+                    sheet.merge_range(row, col + 2, row, col + 4, " ", txt_name)  # Communication
+                    sheet.merge_range(row, col + 5, row, col + 6, " ", txt_name)  # Partner
                     sheet.merge_range(
-                        row,
-                        col + 7,
-                        row,
-                        col + 8,
-                        data["total"][account]["total_debit"],
-                        txt_name,
+                        row, col + 7, row, col + 8, " ", txt_name                 # Analytic  (vacío en el subtotal de cuenta)
                     )
                     sheet.merge_range(
-                        row,
-                        col + 9,
-                        row,
-                        col + 10,
-                        data["total"][account]["total_credit"],
+                        row, col + 9, row, col + 10, data["total"][account]["total_debit"], txt_name
+                    )  # Debit
+                    sheet.merge_range(
+                        row, col + 11, row, col + 12, data["total"][account]["total_credit"], txt_name
+                    )  # Credit
+                    sheet.merge_range(
+                        row, col + 13, row, col + 14,
+                        data["total"][account]["total_debit"] - data["total"][account]["total_credit"],
                         txt_name,
-                    )
+                    )  # Balance
+
                     sheet.merge_range(
                         row,
                         col + 11,
@@ -311,6 +321,7 @@ class AccountGeneralLedger(models.TransientModel):
                         name_val = line.get("name", "") if line.get("name") else ""
                         debit = line.get("debit") or 0.0
                         credit = line.get("credit") or 0.0
+                        analytic_label = line.get("_analytic_label") or ""  
 
                         factura = (line.get("ref") or line.get("move_name")or"")
 
@@ -319,27 +330,19 @@ class AccountGeneralLedger(models.TransientModel):
 
                         sheet.merge_range(row, col + 2, row, col + 4, name_val, txt_name)
                         sheet.merge_range(row, col + 5, row, col + 6, partner_name, txt_name)
-                        
-                        sheet.merge_range(row, col + 7, row, col + 8, debit, txt_name)
-                        sheet.merge_range(row, col + 9, row, col + 10, credit, txt_name)
+                        sheet.merge_range(row, col + 7, row, col + 8, analytic_label, txt_name)
+                        sheet.merge_range(row, col + 9, row, col + 10, debit, txt_name)
+                        sheet.merge_range(row, col + 11, row, col + 12, credit, txt_name)
 
                         sheet.merge_range(row, col + 11, row, col + 12, " ", txt_name)
                 row += 1
-                sheet.merge_range(row, col, row, col + 6, "Total", filter_head)
-                sheet.merge_range(
-                    row,
-                    col + 7,
-                    row,
-                    col + 8,
-                    data["grand_total"]["total_debit"],
-                    filter_head,
-                )
+                sheet.merge_range(row, col, row, col + 8, "Total", filter_head)
                 sheet.merge_range(
                     row,
                     col + 9,
                     row,
                     col + 10,
-                    data["grand_total"]["total_credit"],
+                    data["grand_total"]["total_debit"],
                     filter_head,
                 )
                 sheet.merge_range(
@@ -347,6 +350,14 @@ class AccountGeneralLedger(models.TransientModel):
                     col + 11,
                     row,
                     col + 12,
+                    data["grand_total"]["total_credit"],
+                    filter_head,
+                )
+                sheet.merge_range(
+                    row,
+                    col + 13,
+                    row,
+                    col + 14,
                     float(data["grand_total"]["total_debit"])
                     - float(data["grand_total"]["total_credit"]),
                     filter_head,
