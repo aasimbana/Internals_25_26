@@ -76,23 +76,31 @@
                                             Final del mes pasado
                                         </button>
                                         <!-- Last Quarter Button -->
-                                        <button
+                                        <!-- <button
                                             class="report-filter-button"
                                             t-att-data-value="'last-quarter-end'"
                                             type="button"
                                             t-on-click="applyFilter"
                                         >
                                             Fin del último trimestre
-                                        </button>
+                                        </button> -->
                                         <!-- Last Year Button -->
-                                        <button
+                                        <!-- <button
                                             class="report-filter-button"
                                             t-att-data-value="'last-year-end'"
                                             type="button"
                                             t-on-click="applyFilter"
                                         >
                                             Fin del año pasado
-                                        </button>
+                                        </button> -->
+                                        <!-- Aquí mostramos la fecha seleccionada -->
+                                        <t t-if="state.date_range and state.date_range.end_date">
+                                            <div class="dropdown-divider"/>
+                                            <div class="text-center fw-bold" style="padding: 8px; background-color: #f0f0f0; margin: 4px 0;">
+                                                <span class="fa fa-calendar" style="margin-right: 5px;"/>
+                                                <t t-esc="state.date_range.end_date"/>
+                                            </div>
+                                        </t>
                                         <!-- Separator -->
                                         <div
                                             role="separator"
@@ -109,7 +117,7 @@
                                                 type="date"
                                                 id="end_date"
                                                 t-ref="date_to"
-                                                t-on-input="applyFilter"
+    
                                                 style="border:none;border-bottom: 1px solid #000;padding: 5px;outline: none;"
                                                 name="end_date"
                                             />
@@ -163,7 +171,10 @@
                                     >
                                         <t
                                             t-esc="state.selected_partner_rec[0].name"
-                                        /> Proveedor
+                                        />
+                                    </t>
+                                    <t t-else=""> 
+                                        Proveedor
                                     </t>
                                 </a>
 
@@ -194,6 +205,17 @@
                                         </t>
                                     </div>
                                 </div>
+                            </div>
+                            <!-- NUEVO BOTÓN APLICAR -->
+                            <div class="apply_filter">
+                                <button
+                                    type="button"
+                                    id="apply_filter"
+                                    class="btn btn-primary"
+                                    t-on-click="applyFilters"
+                                >
+                                    Aplicar
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -413,9 +435,7 @@
                                                                             cursor: pointer;
                                                                             display: inline-block;"
                                                                     >
-                                                                        View
-                                                                        Journal
-                                                                        Entry
+                                                                        View Journal Entry
                                                                     </button>
                                                                 </div>
                                                             </span>

@@ -220,18 +220,16 @@
                                                     />
                                                 </span>
                                             </th>
+                                           <!-- Para currency_id -->
                                             <th>
                                                 <span>
-                                                    <t
-                                                        t-esc="valuelist['currency_id']"
-                                                    />
+                                                    <t t-esc="valuelist.get('currency_id', '')" />
                                                 </span>
                                             </th>
+                                            <!-- Para account_id -->
                                             <th>
                                                 <span>
-                                                    <t
-                                                        t-esc="valuelist['account_id']"
-                                                    />
+                                                    <t t-esc="valuelist.get('account_id', '')" />
                                                 </span>
                                             </th>
                                             <th>
