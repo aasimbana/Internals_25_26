@@ -53,11 +53,11 @@ class AgePayableReport(models.TransientModel):
                     "move_name": line.move_name,
                     "date": line.date,
                     "amount_currency": line.amount_currency,
-                    "account_id": line.account_id.id,
+                    "account_id": (line.account_id.id, line.account_id.name),  # ← Tupla
                     "date_maturity": line.date_maturity,
-                    "currency_id": line.currency_id.id,
+                    "currency_id": (line.currency_id.id, line.currency_id.name),  # ← Tupla
                     "amount_residual": -(line.amount_residual),
-                    "move_id": line.move_id.id,
+                    "move_id": (line.move_id.id, line.move_id.name),  # ← Cambiar a tupla
                     "diff0": line.amount_residual if diffrence <= 0 else 0.0,
                     "diff1": line.amount_residual if 0 < diffrence <= 30 else 0.0,
                     "diff2": line.amount_residual if 30 < diffrence <= 60 else 0.0,
@@ -141,11 +141,11 @@ class AgePayableReport(models.TransientModel):
                     "move_name": line.move_name,
                     "date": line.date,
                     "amount_currency": line.amount_currency,
-                    "account_id": line.account_id.id,
+                    "account_id": line.account_id.name,  # ← CAMBIO: usar .name en vez de .display_name
                     "date_maturity": line.date_maturity,
-                    "currency_id": line.currency_id.id,
+                    "currency_id": line.currency_id.name,
                     "amount_residual": -(line.amount_residual),
-                    "move_id": line.move_id.id,
+                    "move_id": (line.move_id.id, line.move_id.name),
                     "diff0": line.amount_residual if diffrence <= 0 else 0.0,
                     "diff1": line.amount_residual if 0 < diffrence <= 30 else 0.0,
                     "diff2": line.amount_residual if 30 < diffrence <= 60 else 0.0,
@@ -240,8 +240,8 @@ class AgePayableReport(models.TransientModel):
             sheet.merge_range("C3:G3", f"{end_date}", filter_body)
         if data["filters"]["partner"]:
             display_names = [
-                partner.get("display_name", "undefined")
-                for partner in data["filters"]["partner"]
+                partner.get("name", "undefined") # ← CAMBIO: usar .name en vez de .display_name
+                for partner in data["filters"]["partner"] 
             ]
             display_names_str = ", ".join(display_names)
             sheet.merge_range("C4:G4", display_names_str, filter_body)
