@@ -34,6 +34,7 @@ class AgedPayable extends owl.Component {
             selected_partner: [],
             selected_partner_rec: [],
             all_partners: [],
+            date_range: { end_date: null }, //estado de la fecha final
         });
         //this.load_data((self.initial_render = true));
     }
@@ -193,7 +194,7 @@ class AgedPayable extends owl.Component {
             //     ...this.state.all_partners.filter((p) => p.id !== null),
             // ];
             this.state.selected_partner_rec = [];
-            this.load_data(); // Llama a load_data para cargar todos los clientes
+            //this.load_data(); // Llama a load_data para cargar todos los clientes
         } else {
             // Buscar el cliente específico
             const selectedPartner = this.state.all_partners.find(
@@ -201,10 +202,83 @@ class AgedPayable extends owl.Component {
             );
             if (selectedPartner) {
                 this.state.selected_partner_rec = [selectedPartner]; // Actualiza el estado con el cliente seleccionado
-                this.load_data(); // Llama a load_data para cargar los datos del cliente seleccionado
+                //this.load_data(); // Llama a load_data para cargar los datos del cliente seleccionado
             }
         }
         this.render(true); // Actualizar la vista
+    }
+    async applyFilters() {
+        /**
+         * Aplica los filtros seleccionados y carga los datos
+         */
+        let move_line_list = [];
+        let move_lines_total = "";
+        let diff0Sum = 0;
+        let diff1Sum = 0;
+        let diff2Sum = 0;
+        let diff3Sum = 0;
+        let diff4Sum = 0;
+        let diff5Sum = 0;
+        let TotalCredit = 0;
+        let currency;
+        
+        try {
+            const selectedPartnerId =
+                this.state.selected_partner_rec.length > 0
+                    ? this.state.selected_partner_rec[0].id
+                    : null;
+    
+            const endDate = this.date_range.el ? this.date_range.el.value : null;
+    
+            let filtered_data = await this.orm.call(
+                "age.payable.report",
+                "get_filter_values",
+                [endDate, this.state.selected_partner_rec]
+            );
+    
+            for (const index in filtered_data) {
+                const value = filtered_data[index];
+    
+                if (index !== "partner_totals") {
+                    move_line_list.push(index);
+                } else {
+                    move_lines_total = value;
+    
+                    for (const moveLine of Object.values(move_lines_total)) {
+                        currency = moveLine.currency_id;
+                        diff0Sum += moveLine.diff0_sum || 0;
+                        diff1Sum += moveLine.diff1_sum || 0;
+                        diff2Sum += moveLine.diff2_sum || 0;
+                        diff3Sum += moveLine.diff3_sum || 0;
+                        diff4Sum += moveLine.diff4_sum || 0;
+                        diff5Sum += moveLine.diff5_sum || 0;
+                        TotalCredit += moveLine.credit_sum || 0;
+                    }
+                }
+            }
+    
+            TotalCredit = parseFloat(TotalCredit.toFixed(2));
+            diff0Sum = parseFloat(diff0Sum.toFixed(2));
+            diff1Sum = parseFloat(diff1Sum.toFixed(2));
+            diff2Sum = parseFloat(diff2Sum.toFixed(2));
+            diff3Sum = parseFloat(diff3Sum.toFixed(2));
+            diff4Sum = parseFloat(diff4Sum.toFixed(2));
+            diff5Sum = parseFloat(diff5Sum.toFixed(2));
+    
+            this.state.data = filtered_data;
+            this.state.move_line = move_line_list;
+            this.state.total = move_lines_total;
+            this.state.currency = currency;
+            this.state.total_credit = TotalCredit;
+            this.state.diff0_sum = diff0Sum;
+            this.state.diff1_sum = diff1Sum;
+            this.state.diff2_sum = diff2Sum;
+            this.state.diff3_sum = diff3Sum;
+            this.state.diff4_sum = diff4Sum;
+            this.state.diff5_sum = diff5Sum;
+        } catch (error) {
+            console.error("Error al cargar datos:", error);
+        }
     }
     //Filtra los CLientes segun el Valor del Field Cliente
     filterPartners() {
@@ -348,24 +422,23 @@ class AgedPayable extends owl.Component {
         let diff4Sum = 0;
         let diff5Sum = 0;
         let TotalCredit = 0;
+
         if (ev.target && ev.target.attributes["data-value"]) {
             if (ev.target.attributes["data-value"].value == "today") {
                 this.date_range.el.value = today.toFormat("yyyy-MM-dd");
+                this.state.date_range.end_date = today.toFormat("yyyy-MM-dd");
             } else if (ev.target.attributes["data-value"].value == "last-month-end") {
-                this.date_range.el.value = today
-                    .startOf("month")
-                    .minus({days: 1})
-                    .toFormat("yyyy-MM-dd");
+                const lastMonthEnd = today.startOf("month").minus({days: 1}).toFormat("yyyy-MM-dd");
+                this.date_range.el.value = lastMonthEnd;
+                this.state.date_range.end_date = lastMonthEnd;
             } else if (ev.target.attributes["data-value"].value == "last-quarter-end") {
-                this.date_range.el.value = today
-                    .startOf("quarter")
-                    .minus({days: 1})
-                    .toFormat("yyyy-MM-dd");
+                const lastQuarterEnd = today.startOf("quarter").minus({days: 1}).toFormat("yyyy-MM-dd");
+                this.date_range.el.value = lastQuarterEnd;
+                this.state.date_range.end_date = lastQuarterEnd;
             } else if (ev.target.attributes["data-value"].value == "last-year-end") {
-                this.date_range.el.value = today
-                    .startOf("year")
-                    .minus({days: 1})
-                    .toFormat("yyyy-MM-dd");
+                const lastYearEnd = today.startOf("year").minus({days: 1}).toFormat("yyyy-MM-dd");
+                this.date_range.el.value = lastYearEnd;
+                this.state.date_range.end_date = lastYearEnd;
             }
         } else if (
             e &&
@@ -382,51 +455,57 @@ class AgedPayable extends owl.Component {
                 (rec) => rec.id
             );
         }
-        debugger;
-        let filtered_data = await this.orm.call(
-            "age.payable.report",
-            "get_filter_values",
-            [this.date_range.el.value, this.state.selected_partner_rec]
-        );
-        for (const index in filtered_data) {
-            const value = filtered_data[index];
+    //     debugger;
+    //     let filtered_data = await this.orm.call(
+    //         "age.payable.report",
+    //         "get_filter_values",
+    //         [this.date_range.el.value, this.state.selected_partner_rec]
+    //     );
+    //     for (const index in filtered_data) {
+    //         const value = filtered_data[index];
 
-            if (index !== "partner_totals") {
-                move_line_list.push(index);
-            } else {
-                move_lines_total = value;
+    //         if (index !== "partner_totals") {
+    //             move_line_list.push(index);
+    //         } else {
+    //             move_lines_total = value;
 
-                for (const moveLine of Object.values(move_lines_total)) {
-                    diff0Sum += moveLine.diff0_sum || 0;
-                    diff1Sum += moveLine.diff1_sum || 0;
-                    diff2Sum += moveLine.diff2_sum || 0;
-                    diff3Sum += moveLine.diff3_sum || 0;
-                    diff4Sum += moveLine.diff4_sum || 0;
-                    diff5Sum += moveLine.diff5_sum || 0;
-                    TotalCredit += moveLine.credit_sum || 0;
-                }
-            }
-        }
-        TotalCredit = parseFloat(TotalCredit.toFixed(2));
-        diff0Sum = parseFloat(diff0Sum.toFixed(2));
-        diff1Sum = parseFloat(diff1Sum.toFixed(2));
-        diff2Sum = parseFloat(diff2Sum.toFixed(2));
-        diff3Sum = parseFloat(diff3Sum.toFixed(2));
-        diff4Sum = parseFloat(diff4Sum.toFixed(2));
-        diff5Sum = parseFloat(diff5Sum.toFixed(2));
-        this.state.data = filtered_data;
-        this.state.move_line = move_line_list;
-        this.state.total = move_lines_total;
-        this.state.total_credit = TotalCredit;
-        this.state.diff0_sum = diff0Sum;
-        this.state.diff1_sum = diff1Sum;
-        this.state.diff2_sum = diff2Sum;
-        this.state.diff3_sum = diff3Sum;
-        this.state.diff4_sum = diff4Sum;
-        this.state.diff5_sum = diff5Sum;
+    //             for (const moveLine of Object.values(move_lines_total)) {
+    //                 diff0Sum += moveLine.diff0_sum || 0;
+    //                 diff1Sum += moveLine.diff1_sum || 0;
+    //                 diff2Sum += moveLine.diff2_sum || 0;
+    //                 diff3Sum += moveLine.diff3_sum || 0;
+    //                 diff4Sum += moveLine.diff4_sum || 0;
+    //                 diff5Sum += moveLine.diff5_sum || 0;
+    //                 TotalCredit += moveLine.credit_sum || 0;
+    //             }
+    //         }
+    //     }
+    //     TotalCredit = parseFloat(TotalCredit.toFixed(2));
+    //     diff0Sum = parseFloat(diff0Sum.toFixed(2));
+    //     diff1Sum = parseFloat(diff1Sum.toFixed(2));
+    //     diff2Sum = parseFloat(diff2Sum.toFixed(2));
+    //     diff3Sum = parseFloat(diff3Sum.toFixed(2));
+    //     diff4Sum = parseFloat(diff4Sum.toFixed(2));
+    //     diff5Sum = parseFloat(diff5Sum.toFixed(2));
+    //     this.state.data = filtered_data;
+    //     this.state.move_line = move_line_list;
+    //     this.state.total = move_lines_total;
+    //     this.state.total_credit = TotalCredit;
+    //     this.state.diff0_sum = diff0Sum;
+    //     this.state.diff1_sum = diff1Sum;
+    //     this.state.diff2_sum = diff2Sum;
+    //     this.state.diff3_sum = diff3Sum;
+    //     this.state.diff4_sum = diff4Sum;
+    //     this.state.diff5_sum = diff5Sum;
+    // }
+    // getDomain() {
+    //     return [];
     }
-    getDomain() {
-        return [];
+    onDateChange(ev) {
+        /**
+         * Actualiza la fecha en el estado cuando el usuario cambia manualmente la fecha
+         */
+        this.state.date_range.end_date = ev.target.value;
     }
 }
 AgedPayable.template = "age_p_template_new";
