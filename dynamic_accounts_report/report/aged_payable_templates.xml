@@ -226,6 +226,7 @@
                                                     <t t-esc="valuelist.get('currency_id', '')" />
                                                 </span>
                                             </th>
+
                                             <!-- Para account_id -->
                                             <th>
                                                 <span>
