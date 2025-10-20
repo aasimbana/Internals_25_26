@@ -12,7 +12,7 @@
                     <!-- Title -->
                     <div class="">
                         <h1 style="padding:10px">
-                            <t t-esc="state.title" />
+                            <t t-esc="state.title or props.action.display_name" />
                         </h1>
                     </div>
                     <div
@@ -65,60 +65,60 @@
                                             class="report-filter-button"
                                             t-att-data-value="'month'"
                                             type="button"
-                                            t-on-click="applyFilter"
+                                            t-on-click="updateFilter"
                                         >
                                             This Month
                                         </button>
                                         <!-- This Quarter Button -->
-                                        <button
+                                        <!-- <button
                                             class="report-filter-button"
                                             t-att-data-value="'quarter'"
                                             type="button"
                                             t-on-click="applyFilter"
                                         >
                                             This Quarter
-                                        </button>
+                                        </button> -->
                                         <!-- This Year Button -->
-                                        <button
+                                        <!-- <button
                                             class="report-filter-button"
                                             t-att-data-value="'year'"
                                             type="button"
                                             t-on-click="applyFilter"
                                         >
                                             This Year
-                                        </button>
+                                        </button> -->
                                         <!-- Separator -->
                                         <div
                                             role="separator"
                                             class="dropdown-divider"
                                         />
                                         <!-- Last Month Button -->
-                                        <button
+                                        <!-- <button
                                             class="report-filter-button"
                                             t-att-data-value="'last-month'"
                                             type="button"
                                             t-on-click="applyFilter"
                                         >
                                             Last month
-                                        </button>
+                                        </button> -->
                                         <!-- Last Quarter Button -->
-                                        <button
+                                        <!-- <button
                                             class="report-filter-button"
                                             t-att-data-value="'last-quarter'"
                                             type="button"
                                             t-on-click="applyFilter"
                                         >
                                             Last quarter
-                                        </button>
+                                        </button> -->
                                         <!-- Last Year Button -->
-                                        <button
+                                        <!-- <button
                                             class="report-filter-button"
                                             t-att-data-value="'last-year'"
                                             type="button"
                                             t-on-click="applyFilter"
                                         >
                                             Last year
-                                        </button>
+                                        </button> -->
                                         <!-- Separator -->
                                         <div
                                             role="separator"
@@ -137,9 +137,10 @@
                                             <input
                                                 type="date"
                                                 id="start_date"
-                                                t-on-change="applyFilter"
+                                                t-on-change="updateFilter"
                                                 style="border:none;border-bottom: 1px solid #000;padding: 5px;outline: none;"
                                                 name="start_date"
+                                                t-att-value="state.date_range.start_date or ''"
                                             />
                                         </div>
                                         <!-- End Date -->
@@ -154,9 +155,10 @@
                                             <input
                                                 type="date"
                                                 id="end_date"
-                                                t-on-change="applyFilter"
+                                                t-on-change="updateFilter"
                                                 style="border:none;border-bottom: 1px solid #000;padding: 5px;outline: none;"
                                                 name="end_date"
+                                                t-att-value="state.date_range.end_date or ''"
                                             />
                                         </div>
                                     </div>
@@ -177,7 +179,7 @@
                                     <t t-if="state.selected_partner_rec">
                                         <t
                                             t-esc="state.selected_partner_rec.name"
-                                        />Cliente
+                                        />Customer 
                                     </t>
                                 </a>
 
@@ -280,14 +282,14 @@
                                 <div class="dropdown-menu" role="menu">
                                     <div class="list-group">
                                         <!-- Include Draft Entries Button -->
-                                        <button
+                                        <!-- <button
                                             class="report-filter-button"
                                             t-att-data-value="'draft'"
                                             type="button"
                                             t-on-click="applyFilter"
                                         >
                                             Include Draft Entries
-                                        </button>
+                                        </button> -->
                                         <!-- Unfold All Button -->
                                         <button
                                             class="report-filter-button"
@@ -307,7 +309,7 @@
                                     class="btn btn-primary"
                                     t-on-click="applyFilter"
                                 >
-                                    Aplicar
+                                    Apply 
                                 </button>
                             </div>
                         </div>

@@ -11,6 +11,7 @@ const actionRegistry = registry.category("actions");
 
 class ProfitAndLoss extends owl.Component {
     async setup() {
+        this.filter = {};
         super.setup(...arguments);
         this.initial_render = true;
         this.orm = useService("orm");
@@ -30,27 +31,63 @@ class ProfitAndLoss extends owl.Component {
         this.wizard_id =
             (await this.orm.call("dynamic.balance.sheet.report", "create", [{}])) |
             null;
+        this.load_filters();
         // this.load_data((self.initial_render = true));
-        //no descomentar porque trae todo 
+        // no descomentar porque trae todo 
+    }
+    async load_filters() {
+        /**
+         * Loads the filters for the profit and loss report.
+         */
+        console.log("load_filters");
+        var self = this;
+        var action_title = self.props.action.display_name;
+        self.state.title = action_title;
+        try {
+            var self = this;
+            let data = await self.orm.call(
+                "dynamic.balance.sheet.report",
+                "get_filter",
+                [this.wizard_id]
+            );
+            console.log("filtros: ", data);
+            self.state.filter_data = data;
+        } catch (el) {
+            console.log("error filtros: ", el);
+            console.log(el);
+            window.location.href;
+        }
     }
     async load_data() {
         /**
          * Loads the data for the profit and loss report.
          */
+        console.log("load_data");
         var self = this;
-        var action_title = self.props.action.display_name;
         try {
-            var self = this;
+            this.filter = {
+                date_from: this.state.filter_data?.date_from || null,
+                date_to: this.state.filter_data?.date_to || null,
+                target_move: this.state.filter_data?.target_move || 'posted',
+                journal_ids: this.state.filter_data?.journal_ids || [],
+                account_ids: this.state.filter_data?.account_ids || [],
+                analytic_ids: this.state.filter_data?.analytic_ids || [],
+                company_id: this.state.filter_data?.company_id || null
+            };
             let data = await self.orm.call(
                 "dynamic.balance.sheet.report",
                 "view_report",
-                [this.wizard_id, this.state.comparison, this.state.comparison_type]
+                [this.wizard_id, this.state.comparison, this.state.comparison_type, this.filter]
             );
+            console.log("load data", data);
+
             self.state.data = data[0];
             self.state.datas = data[2];
-            self.state.filter_data = data[1];
-            self.state.title = action_title;
+            // self.state.filter_data = data[1];
+            
+
         } catch (el) {
+            console.log(el);
             window.location.href;
         }
     }
@@ -67,6 +104,7 @@ class ProfitAndLoss extends owl.Component {
             this.wizard_id,
             this.state.comparison,
             this.state.comparison_type,
+            this.filter
         ]);
         self.state.data = data[0];
         self.state.datas = data[2];
@@ -93,6 +131,7 @@ class ProfitAndLoss extends owl.Component {
             this.wizard_id,
             this.state.comparison,
             this.state.comparison_type,
+            this.filter
         ]);
         self.state.data = data[0];
         self.state.datas = data[2];
@@ -139,8 +178,20 @@ class ProfitAndLoss extends owl.Component {
         ]);
         // Update the innerHTML of the code target element with the result value
         ev.delegateTarget.querySelector(".code").innerHTML = res[0].journal_ids;
-        self.initial_render = false;
-        self.load_data(self.initial_render);
+        // self.initial_render = false;
+        // self.load_data(self.initial_render);
+    }
+    filter_journals(ev) {
+        console.log("filter_journals");
+        const searchValue = ev.target.value.toLowerCase();
+        const items = ev.currentTarget
+            .closest(".dropdown-menu")
+            .querySelectorAll(".journal-item");
+        console.log("items", items);
+        items.forEach((item) => {
+            const text = item.textContent.toLowerCase();
+            item.style.display = text.includes(searchValue) ? "block" : "none";
+        });
     }
     async apply_account(ev) {
         /**
@@ -166,8 +217,8 @@ class ProfitAndLoss extends owl.Component {
         ]);
         // Update the innerHTML of the account target element with the result value
         ev.delegateTarget.querySelector(".account").innerHTML = res[0].account_ids;
-        self.initial_render = false;
-        self.load_data(self.initial_render);
+        // self.initial_render = false;
+        // self.load_data(self.initial_render);
     }
     async show_gl(ev) {
         /**
@@ -206,8 +257,8 @@ class ProfitAndLoss extends owl.Component {
         ]);
         // Update the innerHTML of the analytic target element with the result value
         ev.delegateTarget.querySelector(".analytic").innerHTML = res[0].analytic_ids;
-        self.initial_render = false;
-        self.load_data(self.initial_render);
+        // self.initial_render = false;
+        // self.load_data(self.initial_render);
     }
     async apply_entries(ev) {
         /**
@@ -236,8 +287,8 @@ class ProfitAndLoss extends owl.Component {
         ]);
         // Update the innerHTML of the target element with the result value
         ev.delegateTarget.querySelector(".target").innerHTML = res[0].target_move;
-        self.initial_render = false;
-        self.load_data(self.initial_render);
+        // self.initial_render = false;
+        // self.load_data(self.initial_render);
     }
     async unfoldAll(ev) {
         /**
@@ -293,8 +344,9 @@ class ProfitAndLoss extends owl.Component {
             this.wizard_id,
             this.filter,
         ]);
-        self.initial_render = false;
-        this.load_data(this.initial_render);
+        
+        // self.initial_render = false;
+        // this.load_data(this.initial_render);
     }
     onPeriodChange(ev) {
         this.period_year.el.value = ev.target.value;
@@ -331,7 +383,7 @@ class ProfitAndLoss extends owl.Component {
                 monthNamesShort[dateObject.getMonth()] + "  " + dateObject.getFullYear()
             );
         }
-        this.load_data(self.initial_render);
+        // this.load_data(self.initial_render);
     }
     sumGrossProfit(op_inc, cor) {
         /**
@@ -358,12 +410,16 @@ class ProfitAndLoss extends owl.Component {
             const dateObject = new Date(res[length]["date_to"]);
             this.state.year.push(dateObject.getFullYear());
         }
-        this.load_data(self.initial_render);
+        // this.load_data(self.initial_render);
     }
     apply_comparison() {
         this.state.comparison = false;
         this.state.comparison_type = null;
         this.state.year = [now.getFullYear()];
+    }
+    async applyFilter() {
+        self.initial_render = false;
+        this.load_data(this.initial_render);
     }
 }
 ProfitAndLoss.template = "dfr_template_new";

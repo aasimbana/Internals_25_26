@@ -10,7 +10,7 @@
                         </h1>
                     </div>
                     <div class="sub_container_right d-flex mx-2">
-                        <t t-if="state.filter_data">
+                        <!-- <t t-if="state.filter_data"> -->
                             <div class="report_print">
                                 <button
                                     type="button"
@@ -122,8 +122,7 @@
                                             </div>
 
                                             <label class="" for="date_to">End
-                                                Date
-                                                :
+                                                Date :
                                             </label>
                                             <div
                                                 class="input-group date"
@@ -249,20 +248,28 @@
                                     <span class="code" />
                                 </a>
                                 <div class="dropdown-menu journals" name="states[]">
+                                    <div class="px-2 py-1" t-on-click.stop="">
+                                        <input type="text"
+                                               class="form-control form-control-sm"
+                                               placeholder="Buscar journal..."
+                                               t-on-keyup="filter_journals"/>
+                                    </div>
                                     <div role="separator" class="dropdown-divider" />
-                                    <t
-                                        t-foreach="state.filter_data['journal']"
-                                        t-as="journal"
-                                        t-key="journal_index"
-                                    >
-                                        <span
-                                            class="dropdown-item"
-                                            role="menuitem"
-                                            t-on-click="apply_journal"
+                                    <t t-if="state.filter_data">
+                                        <t
+                                            t-foreach="state.filter_data['journal']"
+                                            t-as="journal"
+                                            t-key="journal_index"
                                         >
-                                            <span t-esc="journal.id" class="d-none" />
-                                            <t t-esc="journal.name" />
-                                        </span>
+                                            <span
+                                                class="journal-item dropdown-item"
+                                                role="menuitem"
+                                                t-on-click="apply_journal"
+                                            >
+                                                <span t-esc="journal.id" class="d-none" />
+                                                <t t-esc="journal.name" />
+                                            </span>
+                                        </t>
                                     </t>
                                 </div>
                             </div>
@@ -283,19 +290,22 @@
                                 </a>
                                 <div class="dropdown-menu journals" name="states[]">
                                     <div role="separator" class="dropdown-divider" />
-                                    <t
-                                        t-foreach="state.filter_data['account']"
-                                        t-as="account"
-                                        t-key="account_index"
-                                    >
-                                        <span
-                                            class="dropdown-item"
-                                            role="menuitem"
-                                            t-on-click="apply_account"
+                                    <t t-if="state.filter_data">
+                                        
+                                        <t
+                                            t-foreach="state.filter_data['account']"
+                                            t-as="account"
+                                            t-key="account_index"
                                         >
-                                            <span t-esc="account.id" class="d-none" />
-                                            <t t-esc="account.name" />
-                                        </span>
+                                            <span
+                                                class="dropdown-item"
+                                                role="menuitem"
+                                                t-on-click="apply_account"
+                                            >
+                                                <span t-esc="account.id" class="d-none" />
+                                                <t t-esc="account.name" />
+                                            </span>
+                                        </t>
                                     </t>
                                 </div>
                             </div>
@@ -320,19 +330,21 @@
                                     name="states[]"
                                 >
                                     <div role="separator" class="dropdown-divider" />
-                                    <t
-                                        t-foreach="state.filter_data['analytic']"
-                                        t-as="analytic"
-                                        t-key="analytic_index"
-                                    >
-                                        <span
-                                            class="dropdown-item"
-                                            role="menuitem"
-                                            t-on-click="apply_analytic_accounts"
+                                    <t t-if="state.filter_data">
+                                        <t
+                                            t-foreach="state.filter_data['analytic']"
+                                            t-as="analytic"
+                                            t-key="analytic_index"
                                         >
-                                            <span t-esc="analytic.id" class="d-none" />
-                                            <t t-esc="analytic.name" />
-                                        </span>
+                                            <span
+                                                class="dropdown-item"
+                                                role="menuitem"
+                                                t-on-click="apply_analytic_accounts"
+                                            >
+                                                <span t-esc="analytic.id" class="d-none" />
+                                                <t t-esc="analytic.name" />
+                                            </span>
+                                        </t>
                                     </t>
                                 </div>
                             </div>
@@ -378,7 +390,17 @@
                                     </div>
                                 </div>
                             </div>
-                        </t>
+                        <!-- </t> -->
+                    </div>
+                    <div class="apply_filter">
+                        <button
+                            type="button"
+                            id="apply_filter"
+                            class="btn btn-primary"
+                            t-on-click="applyFilter"
+                        >
+                            Apply
+                        </button>
                     </div>
                 </div>
             </div>

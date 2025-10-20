@@ -14,12 +14,13 @@ class AgedReceivable extends owl.Component {
         super.setup(...arguments);
         this.initial_render = true;
         this.orm = useService("orm");
+
         this.action = useService("action");
         this.tbody = useRef("tbody");
-        this.date_range = useRef("date_to");
         this.unfoldButton = useRef("unfoldButton");
-        this.fetchPartners();
+    
         this.state = useState({
+            date_range: { end_date: null },
             move_line: null,
             data: null,
             total: null,
@@ -39,6 +40,24 @@ class AgedReceivable extends owl.Component {
         });
         await this.fetchPartners();
         // await this.applyFilter();
+    }
+    updateFilter(ev) {
+        const preset = ev?.target?.getAttribute("data-value");
+        let iso = null;
+
+        if (preset === "today") {
+        iso = new Date().toISOString().slice(0,10);
+        } else if (preset === "last-month-end") {
+        const d = new Date();
+        const endLast = new Date(d.getFullYear(), d.getMonth(), 0);
+        iso = endLast.toISOString().slice(0,10);
+        } else if (ev?.target?.type === "date") {
+        iso = ev.target.value; // viene del input date
+        }
+
+        if (!this.state.date_range) this.state.date_range = { end_date: null };
+        this.state.date_range.end_date = iso || null;
+        this.render(true);
     }
     async load_data() {
         /**
@@ -193,12 +212,8 @@ class AgedReceivable extends owl.Component {
     selectPartner(event) {
         const partnerId = event.target.dataset.value;
         if (partnerId === "null") {
-            // Si el usuario selecciona "All", seleccionamos todos los clientes
-            // this.state.selected_partner_rec = [
-            //     ...this.state.all_partners.filter((p) => p.id !== null),
-            // ];
+            
             this.state.selected_partner_rec = [];
-            this.load_data(); // Llama a load_data para cargar todos los clientes
         } else {
             // Buscar el cliente específico
             const selectedPartner = this.state.all_partners.find(
@@ -206,7 +221,6 @@ class AgedReceivable extends owl.Component {
             );
             if (selectedPartner) {
                 this.state.selected_partner_rec = [selectedPartner]; // Actualiza el estado con el cliente seleccionado
-                // this.load_data();
             }
         }
         this.render(true); // Actualizar la vista
@@ -286,17 +300,22 @@ class AgedReceivable extends owl.Component {
         });
     }
     filter() {
+        const dr = this.state.date_range || {end_date: null};
         return {
             partner: this.state.selected_partner_rec,
-            end_date: this.date_range.el ? this.date_range.el.value : null,
+            date_range: dr,
+            end_date: dr.end_date || null,
+            start_date: dr.start_date || null, 
         };
     }
     async print_xlsx() {
         /**
          * Generates and downloads an XLSX report for the partner ledger.
          */
+        console.log("print_xlsx");
         var self = this;
         var action_title = self.props.action.display_name;
+        console.log(action_title);
         let totals = {
             diff0_sum: this.state.diff0_sum,
             diff1_sum: this.state.diff1_sum,
@@ -314,6 +333,7 @@ class AgedReceivable extends owl.Component {
             grand_total: totals,
             title: action_title,
         };
+        console.log(datas);
         var action = {
             data: {
                 model: "age.receivable.report",
@@ -368,6 +388,22 @@ class AgedReceivable extends owl.Component {
                 [filters.end_date, filters.partner]
             );
 
+            console.log("Filtered Data:", filtered_data);
+            // Agrega valores de prueba a diff0 y diff1
+            // for (const partnerKey in filtered_data) {
+            //     if (partnerKey !== "partner_totals") {
+            //         const partnerLines = filtered_data[partnerKey];
+            //         if (Array.isArray(partnerLines)) {
+            //             for (const line of partnerLines) {
+            //                 // Asigna valores de prueba
+            //                 line.diff0 = 10.5; // valor de prueba
+            //                 line.diff1 = 25.3; // valor de prueba
+            //             }
+            //         }
+            //     }
+            // }
+            console.log("Filtered Data (modificado):", filtered_data);
+            
             // Procesa los datos recibidos
             for (const index in filtered_data) {
                 const value = filtered_data[index];
@@ -387,6 +423,8 @@ class AgedReceivable extends owl.Component {
                     }
                 }
             }
+            console.log("Move Line List:", move_line_list);
+            
 
             // Actualiza el estado con los nuevos datos
             this.state.data = filtered_data;
