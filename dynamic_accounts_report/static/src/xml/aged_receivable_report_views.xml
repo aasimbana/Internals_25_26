@@ -52,7 +52,7 @@
                                         role="img"
                                         aria-label="Dates"
                                     />
-                                    Rango de fechas
+                                    Date Range 
                                 </a>
                                 <div class="dropdown-menu" role="menu">
                                     <!-- Date Range Options -->
@@ -62,6 +62,8 @@
                                             class="report-filter-button"
                                             t-att-data-value="'today'"
                                             type="button"
+                                            t-on-click="updateFilter"
+                                           
                                         >
                                             Today
                                         </button>
@@ -70,31 +72,33 @@
                                             class="report-filter-button"
                                             t-att-data-value="'last-month-end'"
                                             type="button"
+                                            t-on-click="updateFilter"
+                                           
                                         >
-                                            Final del mes pasado
+                                            End of last month 
                                         </button>
                                         <!-- Last Quarter Button -->
-                                        <button
+                                        <!-- <button
                                             class="report-filter-button"
                                             t-att-data-value="'last-quarter-end'"
                                             type="button"
                                         >
                                             Fin del último trimestre
-                                        </button>
+                                        </button> -->
                                         <!-- Last Year Button -->
-                                        <button
+                                        <!-- <button
                                             class="report-filter-button"
                                             t-att-data-value="'last-year-end'"
                                             type="button"
                                         >
                                             Fin del año pasado
-                                        </button>
+                                        </button> -->
                                         <!-- Separator -->
                                         <div
                                             role="separator"
                                             class="dropdown-divider"
                                         />
-                                        <label class="" for="date_to">Fecha
+                                        <label class="" for="date_to">Date
                                             :
                                         </label>
                                         <div
@@ -107,6 +111,8 @@
                                                 t-ref="date_to"
                                                 style="border:none;border-bottom: 1px solid #000;padding: 5px;outline: none;"
                                                 name="end_date"
+                                                t-att-value="state.date_range and state.date_range.end_date or ''"
+                                                t-on-change="updateFilter"
                                             />
                                         </div>
                                     </div>
@@ -125,7 +131,7 @@
                                         role="img"
                                         aria-label="Dates"
                                     />
-                                    Opciones
+                                    Options
                                 </a>
                                 <div class="dropdown-menu" role="menu">
                                     <div class="list-group">
@@ -136,7 +142,7 @@
                                             t-ref="unfoldButton"
                                             t-on-click="unfoldAll"
                                         >
-                                            Desplegar todo
+                                            Unfold All
                                         </button>
                                     </div>
                                 </div>
@@ -153,7 +159,7 @@
                                         role="img"
                                         aria-label="Partner"
                                     />
-                                    Cliente:
+                                    Customer:
                                     <t
                                         t-if="state.selected_partner_rec and state.selected_partner_rec.length > 0"
                                     >
@@ -196,7 +202,7 @@
                                     class="btn btn-primary"
                                     t-on-click="applyFilter"
                                 >
-                                    Aplicar
+                                    Apply
                                 </button>
                             </div>
 
@@ -219,17 +225,17 @@
                                     <thead>
                                         <tr class="o_heading">
                                             <th colspan="6" />
-                                            <th>Fecha Factura</th>
-                                            <th>Importe Moneda</th>
-                                            <th>Moneda</th>
-                                            <th>Cuenta</th>
-                                            <th>Fecha Prev</th>
-                                            <th>A fecha</th>
+                                            <th>Invoice Date</th>
+                                            <th>Currency Amount</th>
+                                            <th>Currency</th>
+                                            <th>Account</th>
+                                            <th>Previous Date</th>
+                                            <th>To Date</th>
                                             <th>1-30</th>
                                             <th>31-60</th>
                                             <th>61-90</th>
                                             <th>91-120</th>
-                                            <th>+Antiguo</th>
+                                            <th>Older</th>
                                             <th>Total</th>
                                         </tr>
                                     </thead>

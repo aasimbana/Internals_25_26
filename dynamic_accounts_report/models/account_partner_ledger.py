@@ -27,6 +27,9 @@ from dateutil.relativedelta import relativedelta
 
 from odoo import api, fields, models
 from odoo.tools import date_utils
+import logging
+
+_logger = logging.getLogger(__name__)
 
 
 class AccountPartnerLedger(models.TransientModel):
@@ -445,7 +448,9 @@ class AccountPartnerLedger(models.TransientModel):
                     balance = total_debit_balance - total_credit_balance
 
             # Guardar los resultados en el diccionario del partner
+            _logger.info("move_line_list: %s", move_line_list)
             partner_dict[partner] = move_line_list
+            _logger.info("partner_dict: %s", partner_dict)
 
             # Obtener símbolo de la moneda
             currency_id = self.env.company.currency_id.symbol
@@ -463,10 +468,10 @@ class AccountPartnerLedger(models.TransientModel):
             }
 
             # Agregar los totales al diccionario de partners
-            partner_dict["partner_totals"] = partner_totals
+        partner_dict["partner_totals"] = partner_totals
 
             # Devolver el diccionario de partners con los movimientos y totales
-            return partner_dict
+        return partner_dict
 
     @api.model
     def get_xlsx_report(self, data, response, report_name, report_action):
@@ -543,13 +548,19 @@ class AccountPartnerLedger(models.TransientModel):
         sheet.write("B6:b4", "Options", filter_head)
         if start_date or end_date:
             sheet.merge_range("C3:G3", f"{start_date} to {end_date}", filter_body)
-        if data["filters"]["partner"]:
-            display_names = [
-                partner.get("display_name", "undefined")
-                for partner in data["filters"]["partner"]
-            ]
-            display_names_str = ", ".join(display_names)
-            sheet.merge_range("C4:G4", display_names_str, filter_body)
+        _logger.info("data: %s", data)
+        if data["filters"].get("partner"):
+            if isinstance(data["filters"]["partner"], list):
+                display_names = []
+                for partner in data["filters"]["partner"]:
+                    if isinstance(partner, dict):
+                        display_names.append(partner.get("name", "undefined"))
+                    else:
+                        display_names.append(str(partner))
+                display_names_str = ", ".join(display_names)
+                sheet.merge_range("C4:G4", display_names_str, filter_body)
+            else:
+                sheet.merge_range("C4:G4", data["filters"]["partner"].get("name", str(data["filters"]["partner"])), filter_body)
         if data["filters"]["account"]:
             account_keys = list(data["filters"]["account"].keys())
             account_keys_str = ", ".join(account_keys)

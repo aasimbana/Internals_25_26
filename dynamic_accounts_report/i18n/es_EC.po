@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 17.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-08-15 20:45+0000\n"
-"PO-Revision-Date: 2024-08-15 20:45+0000\n"
+"POT-Creation-Date: 2025-10-14 20:38+0000\n"
+"PO-Revision-Date: 2025-10-14 20:38+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -16,28 +16,38 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: dynamic_accounts_report
+#: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.aged_receivable
+msgid "+Antiguo"
+msgstr "Older"
+
+#. module: dynamic_accounts_report
+#: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.aged_payable
+msgid "+Older"
+msgstr "Antiguo"
+
+#. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.aged_payable
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.aged_receivable
 msgid "1-30"
-msgstr ""
+msgstr "1-30"
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.aged_payable
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.aged_receivable
 msgid "31-60"
-msgstr ""
+msgstr "31-60"
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.aged_payable
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.aged_receivable
 msgid "61-90"
-msgstr ""
+msgstr "61-90"
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.aged_payable
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.aged_receivable
 msgid "91-120"
-msgstr ""
+msgstr "91-120"
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.profit_loss
@@ -45,7 +55,7 @@ msgid ""
 "<span class=\"fw-bolder ms-1\">\n"
 "                                    Expenses\n"
 "                                </span>"
-msgstr "Gastos"
+msgstr "<span class=\"fw-bolder ms-1\">Gastos</span>"
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.profit_loss
@@ -53,7 +63,7 @@ msgid ""
 "<span class=\"fw-bolder ms-2\">\n"
 "                                    Income\n"
 "                                </span>"
-msgstr "Ingresos"
+msgstr "<span class=\"fw-bolder ms-2\">Ingresos</span>"
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.profit_loss
@@ -61,14 +71,14 @@ msgid ""
 "<span class=\"fw-bolder ms-2\">\n"
 "                                    Total Income\n"
 "                                </span>"
-msgstr "Ingresos Totales"
+msgstr "<span class=\"fw-bolder ms-2\">Ingresos Totales</span>"
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.profit_loss
 msgid ""
 "<span class=\"fw-bolder ms-2\">Total Expenses\n"
 "                                    </span>"
-msgstr "Gastos Totales"
+msgstr "<span class=\"fw-bolder ms-2\">Gastos Totales</span>"
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.profit_loss
@@ -76,7 +86,7 @@ msgid ""
 "<span class=\"fw-bolder ms-3\">\n"
 "                                    Gross Profit\n"
 "                                </span>"
-msgstr "Beneficio Bruto"
+msgstr "<span class=\"fw-bolder ms-3\">Beneficio Bruto</span>"
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.profit_loss
@@ -84,7 +94,7 @@ msgid ""
 "<span class=\"fw-bolder\">\n"
 "                                    Net Profit\n"
 "                                </span>"
-msgstr "Beneficio Neto"
+msgstr "<span class=\"fw-bolder\">Beneficio Neto</span>"
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.profit_loss
@@ -92,31 +102,31 @@ msgid ""
 "<span class=\"ms-3\">Cost of\n"
 "                                    Revenue\n"
 "                                </span>"
-msgstr "Ingresos"
+msgstr "<span class=\"ms-3\">Costo de Ingresos</span>"
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.profit_loss
 msgid ""
 "<span class=\"ms-3\">Depreciation\n"
 "                                    </span>"
-msgstr "Depreciación"
+msgstr "<span class=\"ms-3\">Depreciación</span>"
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.profit_loss
 msgid "<span class=\"ms-3\">Expenses</span>"
-msgstr "Gastos"
+msgstr "<span class=\"ms-3\">Gastos</span>"
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.profit_loss
 msgid "<span class=\"ms-3\">Operating Income</span>"
-msgstr "Ingresos de Explotación"
+msgstr "<span class=\"ms-3\">Ingresos de Explotación</span>"
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.profit_loss
 msgid ""
 "<span class=\"ms-3\">Other Income\n"
 "                                </span>"
-msgstr "Otros Ingresos"
+msgstr "<span class=\"ms-3\">Otros Ingresos</span>"
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.tax_report
@@ -124,22 +134,22 @@ msgid ""
 "<span style=\"font-weight: 700;\">\n"
 "                                            Purchase\n"
 "                                        </span>"
-msgstr "Comprar"
+msgstr "<span style=\"font-weight: 700;\">Compras</span>"
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.tax_report
 msgid ""
 "<span style=\"font-weight: 700;\">Sales\n"
 "                                        </span>"
-msgstr "Ventas"
+msgstr "<span style=\"font-weight: 700;\">Ventas</span>"
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.balance_sheet
 msgid ""
 "<span style=\"font-weight: bolder; margin-left: 2%;\">\n"
-"                                        ASSETS\n"
+"                                        Assets\n"
 "                                    </span>"
-msgstr "ACTIVOS"
+msgstr "<span style=\"font-weight: bolder; margin-left: 2%;\">Activos</span>"
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.balance_sheet
@@ -147,7 +157,7 @@ msgid ""
 "<span style=\"font-weight: bolder; margin-left: 2%;\">\n"
 "                                        EQUITY\n"
 "                                    </span>"
-msgstr "FONDOS PROPIOS"
+msgstr "<span style=\"font-weight: bolder; margin-left: 2%;\">FONDOS PROPIOS</span>"
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.balance_sheet
@@ -155,7 +165,7 @@ msgid ""
 "<span style=\"font-weight: bolder; margin-left: 2%;\">\n"
 "                                        LIABILITIES\n"
 "                                    </span>"
-msgstr "PASIVO"
+msgstr "<span style=\"font-weight: bolder; margin-left: 2%;\">PASIVO</span>"
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.balance_sheet
@@ -163,7 +173,7 @@ msgid ""
 "<span style=\"font-weight: bolder; margin-left: 4%;\">\n"
 "                                        Current Assets\n"
 "                                    </span>"
-msgstr "Activo Circulante"
+msgstr "<span style=\"font-weight: bolder; margin-left: 4%;\">Activos Corrientes</span>"
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.balance_sheet
@@ -171,7 +181,7 @@ msgid ""
 "<span style=\"font-weight: bolder; margin-left: 4%;\">\n"
 "                                        Current Liabilities\n"
 "                                    </span>"
-msgstr "Pasivo Corriente"
+msgstr "<span style=\"font-weight: bolder; margin-left: 4%;\">Pasivos Corrientes</span>"
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.balance_sheet
@@ -179,7 +189,7 @@ msgid ""
 "<span style=\"font-weight: bolder; margin-left: 4%;\">\n"
 "                                        LIABILITIES + EQUITY\n"
 "                                    </span>"
-msgstr "PASIVO + FONDOS PROPIOS"
+msgstr "<span style=\"font-weight: bolder; margin-left: 4%;\">PASIVO + FONDOS PROPIOS</span>"
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.balance_sheet
@@ -187,7 +197,7 @@ msgid ""
 "<span style=\"font-weight: bolder; margin-left: 4%;\">\n"
 "                                        Total Assets\n"
 "                                    </span>"
-msgstr "Activos Totales"
+msgstr "<span style=\"font-weight: bolder; margin-left: 4%;\">Activos Totales</span>"
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.balance_sheet
@@ -195,7 +205,7 @@ msgid ""
 "<span style=\"font-weight: bolder; margin-left: 4%;\">\n"
 "                                        Total Current Assets\n"
 "                                    </span>"
-msgstr "Total Activo Circulante"
+msgstr "<span style=\"font-weight: bolder; margin-left: 4%;\">Total Activos Corrientes</span>"
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.balance_sheet
@@ -203,7 +213,7 @@ msgid ""
 "<span style=\"font-weight: bolder; margin-left: 4%;\">\n"
 "                                        Total Current Liabilities\n"
 "                                    </span>"
-msgstr "Total Pasivo Corriente"
+msgstr "<span style=\"font-weight: bolder; margin-left: 4%;\">Total Pasivos Corrientes</span>"
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.balance_sheet
@@ -211,7 +221,7 @@ msgid ""
 "<span style=\"font-weight: bolder; margin-left: 4%;\">\n"
 "                                        Total EQUITY\n"
 "                                    </span>"
-msgstr "Total FONDOS PROPIOS"
+msgstr "<span style=\"font-weight: bolder; margin-left: 4%;\">Total FONDOS PROPIOS</span>"
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.balance_sheet
@@ -219,7 +229,7 @@ msgid ""
 "<span style=\"font-weight: bolder; margin-left: 4%;\">\n"
 "                                        Total LIABILITIES\n"
 "                                    </span>"
-msgstr "Total PASIVO"
+msgstr "<span style=\"font-weight: bolder; margin-left: 4%;\">Total PASIVO</span>"
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.balance_sheet
@@ -227,7 +237,7 @@ msgid ""
 "<span style=\"font-weight: bolder; margin-left: 4%;\">\n"
 "                                        Total Unallocated Earnings\n"
 "                                    </span>"
-msgstr "Total Ingresos no asignados"
+msgstr "<span style=\"font-weight: bolder; margin-left: 4%;\">Total Ganancias no Asignadas</span>"
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.balance_sheet
@@ -235,15 +245,15 @@ msgid ""
 "<span style=\"font-weight: bolder; margin-left: 4%;\">\n"
 "                                        Unallocated Earnings\n"
 "                                    </span>"
-msgstr "Ganancias no asignadas"
+msgstr "<span style=\"font-weight: bolder; margin-left: 4%;\">Ganancias no Asignadas</span>"
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.balance_sheet
 msgid ""
 "<span style=\"margin-left: 6%;\">Bank and Cash\n"
-"                                        Accounts\n"
+"                                    Accounts\n"
 "                                    </span>"
-msgstr "Cuentas bancarias y de efectivo"
+msgstr "<span style=\"margin-left: 6%;\">Cuentas bancarias y efectivo</span>"
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.balance_sheet
@@ -251,7 +261,7 @@ msgid ""
 "<span style=\"margin-left: 6%;\">Current\n"
 "                                        Allocated Earnings\n"
 "                                    </span>"
-msgstr "Ganancias asignadas actuales"
+msgstr "<span style=\"margin-left: 6%;\">Ganancias asignadas actuales</span>"
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.balance_sheet
@@ -259,7 +269,7 @@ msgid ""
 "<span style=\"margin-left: 6%;\">Current\n"
 "                                        Assets\n"
 "                                    </span>"
-msgstr "Activos Circulantes"
+msgstr "<span style=\"margin-left: 6%;\">Activos Corrientes</span>"
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.balance_sheet
@@ -267,7 +277,7 @@ msgid ""
 "<span style=\"margin-left: 6%;\">Current\n"
 "                                        Earnings\n"
 "                                    </span>"
-msgstr "Ganancias actuales"
+msgstr "<span style=\"margin-left: 6%;\">Ganancias actuales</span>"
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.balance_sheet
@@ -275,14 +285,14 @@ msgid ""
 "<span style=\"margin-left: 6%;\">Current\n"
 "                                        Liabilities\n"
 "                                    </span>"
-msgstr "Ganancias Actuales"
+msgstr "<span style=\"margin-left: 6%;\">Pasivos Corrientes</span>"
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.balance_sheet
 msgid ""
 "<span style=\"margin-left: 6%;\">Payables\n"
 "                                    </span>"
-msgstr "Cuentas por pagar"
+msgstr "<span style=\"margin-left: 6%;\">Cuentas por pagar</span>"
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.balance_sheet
@@ -290,7 +300,7 @@ msgid ""
 "<span style=\"margin-left: 6%;\">Plus\n"
 "                                        Non-current Assets\n"
 "                                    </span>"
-msgstr "Más Activos No Corrientes"
+msgstr "<span style=\"margin-left: 6%;\">Más Activos No Corrientes</span>"
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.balance_sheet
@@ -298,7 +308,7 @@ msgid ""
 "<span style=\"margin-left: 6%;\">Plus\n"
 "                                        Non-current Liabilities\n"
 "                                    </span>"
-msgstr "Más Pasivos No Corrientes"
+msgstr "<span style=\"margin-left: 6%;\">Más Pasivos No Corrientes</span>"
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.balance_sheet
@@ -306,21 +316,21 @@ msgid ""
 "<span style=\"margin-left: 6%;\">Plus Fixed\n"
 "                                        Assets\n"
 "                                    </span>"
-msgstr "Más activos Fijos"
+msgstr "<span style=\"margin-left: 6%;\">Más Activos Fijos</span>"
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.balance_sheet
 msgid ""
 "<span style=\"margin-left: 6%;\">Prepayments\n"
 "                                    </span>"
-msgstr "Pagos Anticipados"
+msgstr "<span style=\"margin-left: 6%;\">Pagos anticipados</span>"
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.balance_sheet
 msgid ""
 "<span style=\"margin-left: 6%;\">Receivables\n"
 "                                    </span>"
-msgstr "Cuentas por cobrar"
+msgstr "<span style=\"margin-left: 6%;\">Cuentas por cobrar</span>"
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.balance_sheet
@@ -328,17 +338,17 @@ msgid ""
 "<span style=\"margin-left: 6%;\">Retained\n"
 "                                        Earnings\n"
 "                                    </span>"
-msgstr "Ganancias Retenidas"
+msgstr "<span style=\"margin-left: 6%;\">Ganancias retenidas</span>"
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.tax_report
 msgid "<span>Account</span>"
-msgstr "Cuenta"
+msgstr "<span>Cuenta</span>"
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.tax_report
 msgid "<span>Tax</span>"
-msgstr "Impuesto"
+msgstr "<span>Impuesto</span>"
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.general_ledger
@@ -346,7 +356,7 @@ msgid ""
 "<span>Unknown\n"
 "                                                            Account\n"
 "                                                        </span>"
-msgstr "Cuentas Desconocidas"
+msgstr "<span>Cuenta desconocida</span>"
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.partner_ledger
@@ -354,11 +364,23 @@ msgid ""
 "<span>Unknown\n"
 "                                                            Partner\n"
 "                                                        </span>"
-msgstr "Socio Desconocido"
+msgstr "<span>Socio desconocido</span>"
+
+#. module: dynamic_accounts_report
+#: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.partner_ledger
+msgid ""
+"<span>Unknown\n"
+"                                                Partner\n"
+"                                            </span>"
+msgstr "<span>Socio desconocido</span>"
+
+#. module: dynamic_accounts_report
+#: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.aged_receivable
+msgid "A Fecha"
+msgstr "A Fecha"
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.aged_payable
-#: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.aged_receivable
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.bank_book
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.partner_ledger
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.profit_loss
@@ -369,12 +391,12 @@ msgstr "Cuenta"
 #. module: dynamic_accounts_report
 #: model:ir.model,name:dynamic_accounts_report.model_bank_book_report
 msgid "Account Bank Book Report"
-msgstr "Informe del libro bancario de cuentas"
+msgstr "Informe del Libro Bancario de Cuentas"
 
 #. module: dynamic_accounts_report
 #: model:ir.model,name:dynamic_accounts_report.model_cash_book_report
 msgid "Account Cash Book Report"
-msgstr "Informe del libro de caja de la cuenta"
+msgstr "Informe del Libro de Caja de Cuentas"
 
 #. module: dynamic_accounts_report
 #: model:ir.model.fields,field_description:dynamic_accounts_report.field_dynamic_balance_sheet_report__account_ids
@@ -384,43 +406,31 @@ msgstr "Cuentas"
 #. module: dynamic_accounts_report
 #: model:ir.actions.report,name:dynamic_accounts_report.action_print_aged_payable
 msgid "Age Payable"
-msgstr "Edad a pagar"
+msgstr "Antigüedad de Cuentas por Pagar"
 
 #. module: dynamic_accounts_report
 #: model:ir.actions.report,name:dynamic_accounts_report.action_print_aged_receivable
 msgid "Age Receivable"
-msgstr "Edad por cobrar"
-
-#. module: dynamic_accounts_report
-#: model:ir.actions.client,name:dynamic_accounts_report.action_aged_payable
-#: model:ir.ui.menu,name:dynamic_accounts_report.aged_payable_menu
-msgid "Aged Payable"
-msgstr "Pago por edad"
+msgstr "Antigüedad de Cuentas por Cobrar"
 
 #. module: dynamic_accounts_report
 #: model:ir.model,name:dynamic_accounts_report.model_age_payable_report
 msgid "Aged Payable Report"
-msgstr "Informe de cuentas por pagar vencidas"
-
-#. module: dynamic_accounts_report
-#: model:ir.actions.client,name:dynamic_accounts_report.action_aged_receivable
-#: model:ir.ui.menu,name:dynamic_accounts_report.aged_receivable_menu
-msgid "Aged Receivable"
-msgstr "Cuenta por cobrar envejecida"
+msgstr "Informe de Antigüedad de Cuentas por Pagar"
 
 #. module: dynamic_accounts_report
 #: model:ir.model,name:dynamic_accounts_report.model_age_receivable_report
 msgid "Aged Receivable Report"
-msgstr "Informe de cuentas por cobrar vencidas"
+msgstr "Informe de Antigüedad de Cuentas por Cobrar"
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.aged_payable
-#: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.aged_receivable
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.partner_ledger
 msgid "Amount Currency"
-msgstr "Monto de Dinero"
+msgstr "Importe moneda"
 
 #. module: dynamic_accounts_report
+#: model:ir.model.fields,field_description:dynamic_accounts_report.field_dynamic_balance_sheet_report__analytic_ids
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.general_ledger
 msgid "Analytic"
 msgstr "Analítica"
@@ -428,23 +438,12 @@ msgstr "Analítica"
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.profit_loss
 msgid "Analytic Account"
-msgstr "Cuenta Analítica"
-
-#. module: dynamic_accounts_report
-#: model:ir.model.fields,field_description:dynamic_accounts_report.field_dynamic_balance_sheet_report__analytic_ids
-msgid "Analytic Accounts"
-msgstr "Cuenta Analítica"
+msgstr "Cuenta analítica"
 
 #. module: dynamic_accounts_report
 #: model:ir.model.fields,help:dynamic_accounts_report.field_dynamic_balance_sheet_report__analytic_ids
 msgid "Analytic accounts associated with the current record."
 msgstr "Cuentas analíticas asociadas al registro actual."
-
-#. module: dynamic_accounts_report
-#: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.aged_payable
-#: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.aged_receivable
-msgid "At Date"
-msgstr "En la Fecha"
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.balance_sheet
@@ -453,27 +452,23 @@ msgstr "En la Fecha"
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.partner_ledger
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.profit_loss
 msgid "Balance"
-msgstr "Balance"
+msgstr "Saldo"
 
 #. module: dynamic_accounts_report
-#: model:ir.actions.client,name:dynamic_accounts_report.action_dynamic_balance_sheet
 #: model:ir.actions.report,name:dynamic_accounts_report.action_print_balance_sheet
-#: model:ir.ui.menu,name:dynamic_accounts_report.menu_balance_sheet_report
 msgid "Balance Sheet"
 msgstr "Hoja de Balance"
 
 #. module: dynamic_accounts_report
-#: model:ir.actions.client,name:dynamic_accounts_report.action_bank_book
-#: model:ir.actions.report,name:dynamic_accounts_report.action_print_bank_book
-#: model:ir.ui.menu,name:dynamic_accounts_report.menu_bank_book
-msgid "Bank Book"
-msgstr "Banco de libros"
+#: model:ir.actions.client,name:dynamic_accounts_report.action_trial_balance
+#: model:ir.ui.menu,name:dynamic_accounts_report.menu_trial_balance
+msgid "Balance de Comprobación"
+msgstr "Balance de Comprobación"
 
 #. module: dynamic_accounts_report
-#: model:ir.actions.client,name:dynamic_accounts_report.action_cash_book
-#: model:ir.ui.menu,name:dynamic_accounts_report.menu_cash_book
-msgid "Cash Book"
-msgstr "Libro de Pago"
+#: model:ir.actions.report,name:dynamic_accounts_report.action_print_bank_book
+msgid "Bank Book"
+msgstr "Libro Bancario"
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.general_ledger
@@ -516,7 +511,7 @@ msgstr "Creado por"
 #: model:ir.model.fields,field_description:dynamic_accounts_report.field_dynamic_balance_sheet_report__create_date
 #: model:ir.model.fields,field_description:dynamic_accounts_report.field_tax_report__create_date
 msgid "Created on"
-msgstr "Creado en"
+msgstr "Creado el"
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.bank_book
@@ -527,8 +522,18 @@ msgid "Credit"
 msgstr "Crédito"
 
 #. module: dynamic_accounts_report
-#: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.aged_payable
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.aged_receivable
+msgid "Cuenta"
+msgstr "Cuenta"
+
+#. module: dynamic_accounts_report
+#: model:ir.actions.client,name:dynamic_accounts_report.action_aged_receivable
+#: model:ir.ui.menu,name:dynamic_accounts_report.aged_receivable_menu
+msgid "Cuenta por cobrar envejecida"
+msgstr "Antigüedad de Cuentas por Cobrar"
+
+#. module: dynamic_accounts_report
+#: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.aged_payable
 msgid "Currency"
 msgstr "Moneda"
 
@@ -539,7 +544,6 @@ msgstr "Fecha"
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.aged_payable
-#: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.aged_receivable
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.bank_book
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.general_ledger
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.partner_ledger
@@ -547,7 +551,7 @@ msgstr "Fecha"
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.tax_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.trial_balance
 msgid "Date Range"
-msgstr "Rango de fechas"
+msgstr "Rango de Fechas"
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.bank_book
@@ -568,7 +572,7 @@ msgstr "Débito"
 #: model:ir.model.fields,field_description:dynamic_accounts_report.field_dynamic_balance_sheet_report__display_name
 #: model:ir.model.fields,field_description:dynamic_accounts_report.field_tax_report__display_name
 msgid "Display Name"
-msgstr "Nombre para Mostrar"
+msgstr "Nombre para mostrar"
 
 #. module: dynamic_accounts_report
 #: model:ir.model.fields.selection,name:dynamic_accounts_report.selection__dynamic_balance_sheet_report__target_move__draft
@@ -576,14 +580,10 @@ msgid "Draft"
 msgstr "Borrador"
 
 #. module: dynamic_accounts_report
+#: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.aged_payable
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.partner_ledger
 msgid "Due Date"
-msgstr "Fecha de Vencimiento"
-
-#. module: dynamic_accounts_report
-#: model:ir.ui.menu,name:dynamic_accounts_report.dynamic_report_accounting
-msgid "Dynamic Financial Reports"
-msgstr "Informes Financieros Dinámicos"
+msgstr "Fecha de vencimiento"
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.trial_balance
@@ -601,15 +601,27 @@ msgid "Entry label"
 msgstr "Etiqueta de entrada"
 
 #. module: dynamic_accounts_report
-#: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.aged_payable
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.aged_receivable
-msgid "Expected Date"
-msgstr "Fecha Esperada"
+msgid "Fecha Factura"
+msgstr "Fecha de la factura"
 
 #. module: dynamic_accounts_report
-#: model:ir.actions.client,name:dynamic_accounts_report.action_general_ledger
+#: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.aged_receivable
+msgid "Fecha prevista"
+msgstr "Fecha prevista"
+
+#. module: dynamic_accounts_report
+#: model:ir.actions.client,name:dynamic_accounts_report.action_dynamic_profit_and_loss
+msgid "Ganancia y Perdida"
+msgstr "Pérdidas y Ganancias"
+
+#. module: dynamic_accounts_report
+#: model:ir.ui.menu,name:dynamic_accounts_report.menu_profit_and_loss_report
+msgid "Ganancias y Perdidas"
+msgstr "Pérdidas y Ganancias"
+
+#. module: dynamic_accounts_report
 #: model:ir.actions.report,name:dynamic_accounts_report.action_print_general_ledger
-#: model:ir.ui.menu,name:dynamic_accounts_report.menu_general_ledger
 msgid "General Ledger"
 msgstr "Libro Mayor"
 
@@ -617,6 +629,12 @@ msgstr "Libro Mayor"
 #: model:ir.model,name:dynamic_accounts_report.model_account_general_ledger
 msgid "General Ledger Report"
 msgstr "Informe del Libro Mayor"
+
+#. module: dynamic_accounts_report
+#: model:ir.actions.client,name:dynamic_accounts_report.action_dynamic_balance_sheet
+#: model:ir.ui.menu,name:dynamic_accounts_report.menu_balance_sheet_report
+msgid "Hoja de Balances"
+msgstr "Hoja de Balance"
 
 #. module: dynamic_accounts_report
 #: model:ir.model.fields,field_description:dynamic_accounts_report.field_account_general_ledger__id
@@ -632,33 +650,44 @@ msgid "ID"
 msgstr "ID"
 
 #. module: dynamic_accounts_report
+#: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.aged_receivable
+msgid "Importe Moneda"
+msgstr "Importe moneda"
+
+#. module: dynamic_accounts_report
+#: model:ir.actions.client,name:dynamic_accounts_report.action_tax_report
+#: model:ir.ui.menu,name:dynamic_accounts_report.tax_report_menu
+msgid "Informe de Impuestos"
+msgstr "Informe de Impuestos"
+
+#. module: dynamic_accounts_report
+#: model:ir.ui.menu,name:dynamic_accounts_report.dynamic_report_accounting
+msgid "Informes Financieros Dinámico"
+msgstr "Informes Financieros Dinámicos"
+
+#. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.trial_balance
 msgid "Initial Balance"
 msgstr "Saldo inicial"
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.aged_payable
-#: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.aged_receivable
 msgid "Invoice Date"
 msgstr "Fecha de la factura"
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.partner_ledger
 msgid "JRNL"
-msgstr "JNL"
+msgstr "DIARIO"
 
 #. module: dynamic_accounts_report
+#: model:ir.model.fields,field_description:dynamic_accounts_report.field_dynamic_balance_sheet_report__journal_ids
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.bank_book
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.general_ledger
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.profit_loss
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.trial_balance
 msgid "Journal"
 msgstr "Diario"
-
-#. module: dynamic_accounts_report
-#: model:ir.model.fields,field_description:dynamic_accounts_report.field_dynamic_balance_sheet_report__journal_ids
-msgid "Journals"
-msgstr "Diarios"
 
 #. module: dynamic_accounts_report
 #: model:ir.model.fields,field_description:dynamic_accounts_report.field_account_general_ledger__write_uid
@@ -684,17 +713,46 @@ msgstr "Actualizado por última vez por"
 #: model:ir.model.fields,field_description:dynamic_accounts_report.field_dynamic_balance_sheet_report__write_date
 #: model:ir.model.fields,field_description:dynamic_accounts_report.field_tax_report__write_date
 msgid "Last Updated on"
-msgstr "Ultima actualización e"
+msgstr "Última actualización el"
+
+#. module: dynamic_accounts_report
+#: model:ir.actions.client,name:dynamic_accounts_report.action_general_ledger
+#: model:ir.ui.menu,name:dynamic_accounts_report.menu_general_ledger
+msgid "Libro Mayor"
+msgstr "Libro Mayor"
+
+#. module: dynamic_accounts_report
+#: model:ir.actions.client,name:dynamic_accounts_report.action_bank_book
+#: model:ir.ui.menu,name:dynamic_accounts_report.menu_bank_book
+msgid "Libro de Bancos"
+msgstr "Libro de Bancos"
+
+#. module: dynamic_accounts_report
+#: model:ir.actions.client,name:dynamic_accounts_report.action_cash_book
+#: model:ir.ui.menu,name:dynamic_accounts_report.menu_cash_book
+msgid "Libro de Pagos"
+msgstr "Libro de Caja"
+
+#. module: dynamic_accounts_report
+#: model:ir.actions.client,name:dynamic_accounts_report.action_partner_ledger
+#: model:ir.ui.menu,name:dynamic_accounts_report.menu_partner_ledger
+msgid "Libro mayor de socio"
+msgstr "Libro Mayor de Socios"
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.partner_ledger
 msgid "Matching Number"
-msgstr "Número Coincidente"
+msgstr "Número de conciliación"
+
+#. module: dynamic_accounts_report
+#: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.aged_receivable
+msgid "Moneda"
+msgstr "Moneda"
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.bank_book
 msgid "Move"
-msgstr "Mover"
+msgstr "Movimiento"
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.tax_report
@@ -702,10 +760,9 @@ msgid "NET"
 msgstr "NETO"
 
 #. module: dynamic_accounts_report
-#: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.aged_payable
-#: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.aged_receivable
-msgid "Older"
-msgstr "Más Viejo"
+#: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.general_ledger
+msgid "No movements for this account in the selected range."
+msgstr "Sin movimientos para esta cuenta en el rango seleccionado."
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.bank_book
@@ -717,8 +774,13 @@ msgid "Options"
 msgstr "Opciones"
 
 #. module: dynamic_accounts_report
+#: model:ir.actions.client,name:dynamic_accounts_report.action_aged_payable
+#: model:ir.ui.menu,name:dynamic_accounts_report.aged_payable_menu
+msgid "Pago por edad"
+msgstr "Antigüedad de Cuentas por Pagar"
+
+#. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.aged_payable
-#: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.aged_receivable
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.bank_book
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.general_ledger
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.partner_ledger
@@ -726,11 +788,9 @@ msgid "Partner"
 msgstr "Socio"
 
 #. module: dynamic_accounts_report
-#: model:ir.actions.client,name:dynamic_accounts_report.action_partner_ledger
 #: model:ir.actions.report,name:dynamic_accounts_report.action_print_partner_ledger
-#: model:ir.ui.menu,name:dynamic_accounts_report.menu_partner_ledger
 msgid "Partner Ledger"
-msgstr "Libro mayor de socio"
+msgstr "Libro Mayor de Socios"
 
 #. module: dynamic_accounts_report
 #: model:ir.model,name:dynamic_accounts_report.model_account_partner_ledger
@@ -756,23 +816,22 @@ msgstr "Publicado,"
 #. module: dynamic_accounts_report
 #: model:ir.actions.report,name:dynamic_accounts_report.action_print_profit_loss
 msgid "Profit And Loss"
-msgstr "Ganancia y Perdida"
+msgstr "Pérdidas y Ganancias"
 
 #. module: dynamic_accounts_report
 #: model:ir.model,name:dynamic_accounts_report.model_dynamic_balance_sheet_report
 msgid "Profit Loss Report"
-msgstr "Informe de pérdidas y ganancias"
+msgstr "Informe de Pérdidas y Ganancias"
 
 #. module: dynamic_accounts_report
-#: model:ir.actions.client,name:dynamic_accounts_report.action_dynamic_profit_and_loss
-#: model:ir.ui.menu,name:dynamic_accounts_report.menu_profit_and_loss_report
-msgid "Profit and Loss"
-msgstr "Ganancia y Perdida"
+#: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.aged_receivable
+msgid "Rango Fechas"
+msgstr "Rango de Fechas"
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.partner_ledger
 msgid "Ref"
-msgstr "Ref"
+msgstr "Ref."
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.bank_book
@@ -792,7 +851,7 @@ msgstr "Seleccione una o más cuentas."
 #. module: dynamic_accounts_report
 #: model:ir.model.fields,help:dynamic_accounts_report.field_dynamic_balance_sheet_report__journal_ids
 msgid "Select one or more journals."
-msgstr "Seleccione una o más diarios."
+msgstr "Seleccione uno o más diarios."
 
 #. module: dynamic_accounts_report
 #: model:ir.model.fields,help:dynamic_accounts_report.field_dynamic_balance_sheet_report__company_id
@@ -803,6 +862,11 @@ msgstr "Seleccione la empresa a la que pertenece este registro."
 #: model:ir.model.fields,help:dynamic_accounts_report.field_dynamic_balance_sheet_report__target_move
 msgid "Select the target move status."
 msgstr "Seleccione el estado del movimiento objetivo."
+
+#. module: dynamic_accounts_report
+#: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.aged_receivable
+msgid "Socio"
+msgstr "Socio"
 
 #. module: dynamic_accounts_report
 #: model:ir.model.fields,help:dynamic_accounts_report.field_dynamic_balance_sheet_report__date_to
@@ -817,7 +881,7 @@ msgstr "Especifique la fecha de inicio."
 #. module: dynamic_accounts_report
 #: model:ir.model.fields,field_description:dynamic_accounts_report.field_dynamic_balance_sheet_report__date_from
 msgid "Start date"
-msgstr "Fecha Inicio"
+msgstr "Fecha de inicio"
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.tax_report
@@ -827,20 +891,23 @@ msgstr "IMPUESTO"
 #. module: dynamic_accounts_report
 #: model:ir.model.fields,field_description:dynamic_accounts_report.field_dynamic_balance_sheet_report__target_move
 msgid "Target Move"
-msgstr "Movimiento Objetivo"
+msgstr "Movimiento objetivo"
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.profit_loss
 msgid "Target move"
-msgstr "Movimiento Objetivo"
+msgstr "Movimiento objetivo"
 
 #. module: dynamic_accounts_report
-#: model:ir.actions.client,name:dynamic_accounts_report.action_tax_report
 #: model:ir.actions.report,name:dynamic_accounts_report.action_print_tax_report
 #: model:ir.model,name:dynamic_accounts_report.model_tax_report
-#: model:ir.ui.menu,name:dynamic_accounts_report.tax_report_menu
 msgid "Tax Report"
 msgstr "Informe de Impuestos"
+
+#. module: dynamic_accounts_report
+#: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.aged_payable
+msgid "To Date"
+msgstr "A Fecha"
 
 #. module: dynamic_accounts_report
 #: model_terms:ir.ui.view,arch_db:dynamic_accounts_report.aged_payable
@@ -852,9 +919,7 @@ msgid "Total"
 msgstr "Total"
 
 #. module: dynamic_accounts_report
-#: model:ir.actions.client,name:dynamic_accounts_report.action_trial_balance
 #: model:ir.actions.report,name:dynamic_accounts_report.action_print_trial_balance
-#: model:ir.ui.menu,name:dynamic_accounts_report.menu_trial_balance
 msgid "Trial Balance"
 msgstr "Balance de Comprobación"
 

@@ -224,9 +224,10 @@ class AgeReceivableReport(models.TransientModel):
         sheet.write("B4:b4", "Partners", filter_head)
         if end_date:
             sheet.merge_range("C3:G3", f"{end_date}", filter_body)
+            
         if data["filters"]["partner"]:
             display_names = [
-                partner.get("display_name", "undefined")
+                partner.get("name", "undefined")
                 for partner in data["filters"]["partner"]
             ]
             display_names_str = ", ".join(display_names)

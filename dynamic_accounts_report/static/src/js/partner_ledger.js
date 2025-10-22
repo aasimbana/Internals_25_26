@@ -32,7 +32,7 @@ class PartnerLedger extends owl.Component {
             total_credit: null,
             partner_list: null,
             total_list: null,
-            date_range: null,
+            date_range: {start_date: null, end_date: null},
             account: null,
             options: null,
             message_list: [],
@@ -116,71 +116,92 @@ class PartnerLedger extends owl.Component {
             display_name: this.props.action.display_name,
         });
     }
+
+        
+        updateFilter(ev) {
+            const t = ev?.target;
+            if (!t) return;
+    
+           
+            const toISO = (s) => {
+                if (!s) return null;
+                if (s.includes("/")) {
+                    const [dd, mm, yyyy] = s.split("/").map(Number);
+                    return `${yyyy}-${String(mm).padStart(2, "0")}-${String(dd).padStart(2, "0")}`;
+                }
+                return s; 
+            };
+    
+           
+            const computePresetRange = (dv) => {
+                const today = new Date();
+                const iso = (d) => d.toISOString().slice(0, 10);
+                let start = null, end = null;
+    
+                if (dv === "year") {
+                    start = new Date(today.getFullYear(), 0, 1);
+                    end   = new Date(today.getFullYear(), 11, 31);
+                } else if (dv === "quarter") {
+                    const q = Math.floor(today.getMonth() / 3);
+                    start = new Date(today.getFullYear(), q * 3, 1);
+                    end   = new Date(today.getFullYear(), (q + 1) * 3, 0);
+                } else if (dv === "month") {
+                    start = new Date(today.getFullYear(), today.getMonth(), 1);
+                    end   = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+                } 
+    
+                return {
+                    start_date: start ? iso(start) : null,
+                    end_date:   end   ? iso(end)   : null,
+                };
+            };
+    
+            // Inputs manuales
+            if (t.name === "start_date") {
+                this.state.date_range = {
+                    ...this.state.date_range,
+                    start_date: toISO(t.value),
+                };
+                return;
+            }
+            if (t.name === "end_date") {
+                this.state.date_range = {
+                    ...this.state.date_range,
+                    end_date: toISO(t.value),
+                };
+                return;
+            }
+    
+            
+            const dv = t.getAttribute?.("data-value");
+            if (dv) {
+                const { start_date, end_date } = computePresetRange(dv);
+                if (start_date || end_date) {
+                    this.state.date_range = { start_date, end_date }; 
+                }
+            }
+        }
+    
     //Funcion que se manda a llamar en el PDF obtiene la informacion
-    filter() {
-        var self = this;
-        let startDate, endDate;
-        let startYear, startMonth, startDay, endYear, endMonth, endDay;
-        if (self.state.date_range) {
-            const today = new Date();
-            if (self.state.date_range === "year") {
-                startDate = new Date(today.getFullYear(), 0, 1);
-                endDate = new Date(today.getFullYear(), 11, 31);
-            } else if (self.state.date_range === "quarter") {
-                const currentQuarter = Math.floor(today.getMonth() / 3);
-                startDate = new Date(today.getFullYear(), currentQuarter * 3, 1);
-                endDate = new Date(today.getFullYear(), (currentQuarter + 1) * 3, 0);
-            } else if (self.state.date_range === "month") {
-                startDate = new Date(today.getFullYear(), today.getMonth(), 1);
-                endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-            } else if (self.state.date_range === "last-month") {
-                startDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-                endDate = new Date(today.getFullYear(), today.getMonth(), 0);
-            } else if (self.state.date_range === "last-year") {
-                startDate = new Date(today.getFullYear() - 1, 0, 1);
-                endDate = new Date(today.getFullYear() - 1, 11, 31);
-            } else if (self.state.date_range === "last-quarter") {
-                const lastQuarter = Math.floor((today.getMonth() - 3) / 3);
-                startDate = new Date(today.getFullYear(), lastQuarter * 3, 1);
-                endDate = new Date(today.getFullYear(), (lastQuarter + 1) * 3, 0);
+        // ---[REPLACE]--- filter(): solo lee del objeto date_range
+        filter() {
+            const dr = this.state?.date_range || { start_date: null, end_date: null };
+    
+            // Validación simple opcional
+            if (dr.start_date && dr.end_date && new Date(dr.start_date) > new Date(dr.end_date)) {
+                // Si usas flags de UI, puedes marcar error aquí
+                // this.state.dateError = true;
             }
-            // Get the date components for start and end dates
-            if (startDate) {
-                startYear = startDate.getFullYear();
-                startMonth = startDate.getMonth() + 1;
-                startDay = startDate.getDate();
-            }
-            if (endDate) {
-                endYear = endDate.getFullYear();
-                endMonth = endDate.getMonth() + 1;
-                endDay = endDate.getDate();
-            }
+    
+            return {
+                partner: this.state.selected_partner_rec,
+                account: this.state.account,
+                options: this.state.options,
+                start_date: dr.start_date || null,
+                end_date: dr.end_date || null,
+            };
         }
-        let filters = {
-            partner: self.state.selected_partner_rec,
-            account: self.state.account,
-            options: self.state.options,
-            start_date: null,
-            end_date: null,
-        };
-        // Check if start and end dates are available before adding them to the filters object
-        if (
-            startYear !== undefined &&
-            startMonth !== undefined &&
-            startDay !== undefined &&
-            endYear !== undefined &&
-            endMonth !== undefined &&
-            endDay !== undefined
-        ) {
-            filters["start_date"] = `${startYear}-${
-                startMonth < 10 ? "0" : ""
-            }${startMonth}-${startDay < 10 ? "0" : ""}${startDay}`;
-            filters["end_date"] = `${endYear}-${endMonth < 10 ? "0" : ""}${endMonth}-${
-                endDay < 10 ? "0" : ""
-            }${endDay}`;
-        }
-        return filters;
-    }
+    
     async print_xlsx() {
         /**
          * Generates and downloads an XLSX report for the partner ledger.
@@ -276,9 +297,9 @@ class PartnerLedger extends owl.Component {
     }
 
     async applyFilter(val, ev, is_delete = false) {
-        let partner_list = []; //Socios filtrados
+        let partner_list = []; 
         let partner_value = [];
-        let partner_totals = ""; //Totales socios filtrados
+        let partner_totals = ""; 
         let month = null;
         this.state.partners = null;
         this.state.data = null;
@@ -295,103 +316,58 @@ class PartnerLedger extends owl.Component {
         }
         //console.log(val,"=======INGRESO 2========")
         if (val && val.target) {
-            debugger;
-            // Asegúrate de que val.target esté definido y contiene los atributos necesarios
-            if (val.target.name === "start_date") {
-                this.state.date_range = {
-                    ...this.state.date_range,
-                    start_date: val.target.value,
-                };
-                //console.log(this.state.date_range,"VALOR DE FECHA")
-            } else if (val.target.name === "end_date") {
-                this.state.date_range = {
-                    ...this.state.date_range,
-                    end_date: val.target.value,
-                };
-                //console.log(this.state.date_range, "VALOR DE FECHA (END)");
-            } else if (val.target.attributes && val.target.attributes["data-value"]) {
-                const dataValue = val.target.attributes["data-value"].value;
-                //console.log(dataValue,"Valor")
-                if (
-                    dataValue === "month" ||
-                    dataValue === "year" ||
-                    dataValue === "quarter" ||
-                    dataValue === "last-month" ||
-                    dataValue === "last-year" ||
-                    dataValue === "last-quarter"
-                ) {
-                    this.state.date_range = dataValue;
+            // 1) Actualiza SIEMPRE el date_range (inputs y presets)
+            this.updateFilter(val);
+        
+            // 2) Toggles (receivable/payable/draft)
+            const dv = val.target.getAttribute?.("data-value");
+        
+            if (dv === "receivable") {
+                if (val.target.classList.contains("selected-filter")) {
+                    const { Receivable, ...updatedAccount } = this.state.account || {};
+                    this.state.account = updatedAccount;
+                    val.target.classList.remove("selected-filter");
+                } else {
+                    this.state.account = { ...(this.state.account || {}), Receivable: true };
+                    val.target.classList.add("selected-filter");
+                }
+            } else if (dv === "payable") {
+                if (val.target.classList.contains("selected-filter")) {
+                    const { Payable, ...updatedAccount } = this.state.account || {};
+                    this.state.account = updatedAccount;
+                    val.target.classList.remove("selected-filter");
+                } else {
+                    this.state.account = { ...(this.state.account || {}), Payable: true };
+                    val.target.classList.add("selected-filter");
+                }
+            } else if (dv === "draft") {
+                if (val.target.classList.contains("selected-filter")) {
+                    const { draft, ...updatedOptions } = this.state.options || {};
+                    this.state.options = updatedOptions;
+                    val.target.classList.remove("selected-filter");
+                } else {
+                    this.state.options = { ...(this.state.options || {}), draft: true };
+                    val.target.classList.add("selected-filter");
                 }
             }
-            if (val.target.attributes && val.target.attributes["data-value"]) {
-                const dataValue = val.target.attributes["data-value"].value;
-                //console.log(dataValue, "Valor");
-
-                if (
-                    dataValue === "month" ||
-                    dataValue === "year" ||
-                    dataValue === "quarter" ||
-                    dataValue === "last-month" ||
-                    dataValue === "last-year" ||
-                    dataValue === "last-quarter"
-                ) {
-                    this.state.date_range = dataValue;
-                } else if (dataValue === "receivable") {
-                    // ... (código para 'receivable' sin cambios, pero dentro del if principal)
-                    if (val.target.classList.contains("selected-filter")) {
-                        const {Receivable, ...updatedAccount} = this.state.account;
-                        this.state.account = updatedAccount;
-                        val.target.classList.remove("selected-filter");
-                    } else {
-                        this.state.account = {
-                            ...this.state.account,
-                            Receivable: true,
-                        };
-                        val.target.classList.add("selected-filter");
-                    }
-                } else if (dataValue === "payable") {
-                    // ... (código para 'payable'  dentro del if principal)
-                    if (val.target.classList.contains("selected-filter")) {
-                        const {Payable, ...updatedAccount} = this.state.account;
-                        this.state.account = updatedAccount;
-                        val.target.classList.remove("selected-filter");
-                    } else {
-                        this.state.account = {
-                            ...this.state.account,
-                            Payable: true,
-                        };
-                        val.target.classList.add("selected-filter");
-                    }
-                } else if (dataValue === "draft") {
-                    // ... (código para 'draft' dentro del if principal)
-                    if (val.target.classList.contains("selected-filter")) {
-                        const {draft, ...updatedOptions} = this.state.options; // Corregido: usar this.state.options
-                        this.state.options = updatedOptions;
-                        val.target.classList.remove("selected-filter");
-                    } else {
-                        this.state.options = {
-                            ...this.state.options,
-                            draft: true,
-                        };
-                        val.target.classList.add("selected-filter");
-                    }
-                }
-            } // Cierra el if principal
         }
+        
         //console.log(this.state.date_range,"VALOR FECHA#")
         // Llamada a la base de datos
+        const filters = this.filter(); // { partner, account, options, start_date, end_date }
         let filtered_data = await this.orm.call(
             "account.partner.ledger",
             "get_filter_values",
             [
-                this.state.selected_partner,
-                this.state.date_range,
+                this.state.selected_partner, // (revisa contrato: id, lista o nombre)
+                { start_date: filters.start_date, end_date: filters.end_date }, // SOLO fechas
                 this.state.account,
                 this.state.options,
             ]
         );
 
-        //console.log(filtered_data,"ESTA ES LA DATA")
+
+        console.log(filtered_data,"ESTA ES LA DATA")
         // Procesar los datos filtrados
         $.each(filtered_data, function (index, value) {
             if (index !== "partner_totals") {
