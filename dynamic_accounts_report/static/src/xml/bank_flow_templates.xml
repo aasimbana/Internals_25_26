@@ -53,11 +53,11 @@
                                             class="report-filter-button"
                                             t-att-data-value="'month'"
                                             type="button"
-                                            t-on-click="applyFilter"
+                                            t-on-click="updateFilter"
                                         >
                                             This Month
                                         </button>
-                                        <button
+                                        <!-- <button
                                             class="report-filter-button"
                                             t-att-data-value="'quarter'"
                                             type="button"
@@ -72,8 +72,8 @@
                                             t-on-click="applyFilter"
                                         >
                                             This Year
-                                        </button>
-                                        <div
+                                        </button> -->
+                                        <!-- <div
                                             role="separator"
                                             class="dropdown-divider"
                                         />
@@ -84,8 +84,8 @@
                                             t-on-click="applyFilter"
                                         >
                                             Last month
-                                        </button>
-                                        <button
+                                        </button> -->
+                                        <!-- <button
                                             class="report-filter-button"
                                             t-att-data-value="'last-quarter'"
                                             type="button"
@@ -100,7 +100,7 @@
                                             t-on-click="applyFilter"
                                         >
                                             Last year
-                                        </button>
+                                        </button> -->
                                         <div
                                             role="separator"
                                             class="dropdown-divider"
@@ -108,97 +108,96 @@
                                         <label class="" for="date_from">Start
                                             Date :
                                         </label>
-                                        <div
-                                            class="input-group date"
-                                            t-ref="date_from"
-                                            data-target-input="nearest"
-                                        >
-
+                                        <div class="input-group date" data-target-input="nearest">
                                             <input
-                                                type="date"
-                                                id="start_date"
-                                                t-on-change="applyFilter"
-                                                style="border:none;border-bottom: 1px solid #000;padding: 5px;outline: none;"
-                                                name="start_date"
+                                              type="date"
+                                              id="start_date"
+                                              name="start_date"
+                                              t-ref="date_from"
+                                              t-on-change="updateFilter"
+                                              style="border:none;border-bottom:1px solid #000;padding:5px;outline:none;"
                                             />
-                                        </div>
+                                          </div>
 
                                         <label class="" for="date_to">End Date
                                             :
                                         </label>
-                                        <div
-                                            class="input-group date"
-                                            t-ref="date_to"
-                                            data-target-input="nearest"
-                                        >
+                                        <div class="input-group date" data-target-input="nearest">
                                             <input
-                                                type="date"
-                                                id="end_date"
-                                                t-on-change="applyFilter"
-                                                style="border:none;border-bottom: 1px solid #000;padding: 5px;outline: none;"
-                                                name="end_date"
+                                              type="date"
+                                              id="end_date"
+                                              name="end_date"
+                                              t-ref="date_to"
+                                              t-on-change="updateFilter"
+                                              style="border:none;border-bottom:1px solid #000;padding:5px;outline:none;"
                                             />
-                                        </div>
+                                          </div>
                                     </div>
                                 </div>
                             </div>
                             <div class="journal" style="">
-                                <a
-                                    type="button"
-                                    class="dropdown-toggle"
-                                    data-bs-toggle="dropdown"
-                                >
-                                    <span
-                                        class="fa fa-book"
-                                        title="Accounts"
-                                        role="img"
-                                    />
-                                    Accounts
-                                    <t t-if="state.selected_account_list">:
-                                        <t
-                                            t-foreach="state.selected_account_list"
-                                            t-as="account_key"
-                                            t-key="account_key_index"
-                                        >
-                                            <t
-                                                t-foreach="state.accounts"
-                                                t-as="account"
-                                                t-key="account_index"
-                                            >
-                                                <t t-if="account['id'] == account_key">
-                                                    <t t-esc="account['name']" />
-                                                </t>
-                                            </t>
-                                            <t
-                                                t-if="account_key_index != Object.keys(state.selected_account_list).length - 1"
-                                            >
-                                                ,
-                                            </t>
+                                <a type="button" class="dropdown-toggle" data-bs-toggle="dropdown">
+                                  <span class="fa fa-book" title="Accounts" role="img"/>
+                                  Accounts
+                                  <t t-if="state.selected_account_list and state.selected_account_list.length">
+                                    :
+                                    <t t-foreach="state.selected_account_list" t-as="acc_id" t-key="acc_id" t-foreach-index="i">
+                                      <t t-foreach="state.accounts" t-as="acc" t-key="acc.id">
+                                        <t t-if="acc.id == acc_id">
+                                          <t t-esc="acc.name"/>
                                         </t>
+                                      </t>
+                                      <t t-if="i != state.selected_account_list.length - 1">, </t>
                                     </t>
+                                  </t>
+                                  <t t-elif="state.accounts_all_selected">: ALL</t>
                                 </a>
-                                <div class="dropdown-menu" role="menu">
-                                    <div class="list-group">
-                                        <t t-if="state.accounts">
-                                            <t
-                                                t-foreach="state.accounts"
-                                                t-as="account"
-                                                t-key="account.id"
-                                            >
-                                                <button
-                                                    class="report-filter-button"
-                                                    t-att-data-value="'account'"
-                                                    t-att-data-id="account.id"
-                                                    type="button"
-                                                    t-on-click="applyFilter"
-                                                >
-                                                    <t t-esc="account.display_name" />
-                                                </button>
-                                            </t>
-                                        </t>
-                                    </div>
+                              
+                                <div class="dropdown-menu p-0" style="min-width: 400px;">
+                                  <!-- Buscador -->
+                                  <div class="p-2 border-bottom">
+                                    <input
+                                      type="text"
+                                      class="form-control form-control-sm"
+                                      placeholder="Buscar cuenta…"
+                                      t-att-value="state.accounts_search"
+                                      t-on-input="updateAccountList"
+                                      t-on-click.stop=""
+                                    />
+                                  </div>
+                              
+                                  <!-- Opción All -->
+                                  <a
+                                    class="dropdown-item text-center py-2 border-bottom"
+                                    href="#"
+                                    style="font-weight: 500;"
+                                    t-on-click.prevent="toggleAllAccounts"
+                                    t-att-class="state.accounts_all_selected ? 'selected-filter' : ''"
+                                  >
+                                    All
+                                  </a>
+                              
+                                  <!-- Lista de Cuentas -->
+                                  <div style="max-height: 350px; overflow-y: auto;">
+                                    <t t-foreach="state.filteredAccounts" t-as="account" t-key="account.id or account.name">
+                                      <t t-if="account.id != null">
+                                        <a
+                                          class="dropdown-item text-center py-2"
+                                          href="#"
+                                          t-att-data-id="account.id"
+                                          t-on-click.prevent="selectAccount"
+                                          t-att-class="state.selected_account_list.includes(account.id) ? 'selected-filter' : ''"
+                                          style="border-bottom: 1px solid #f0f0f0;"
+                                        >
+                                          <t t-if="account.code"><t t-esc="account.code"/> - </t>
+                                          <t t-esc="account.display_name or account.name"/>
+                                        </a>
+                                      </t>
+                                    </t>
+                                  </div>
                                 </div>
-                            </div>
+                              </div>
+                              
                             <div class="option" style="">
                                 <a
                                     type="button"
@@ -215,14 +214,14 @@
                                 </a>
                                 <div class="dropdown-menu" role="menu">
                                     <div class="list-group">
-                                        <button
+                                        <!-- <button
                                             class="report-filter-button"
                                             t-att-data-value="'draft'"
                                             type="button"
                                             t-on-click="applyFilter"
                                         >
                                             Include Draft Entries
-                                        </button>
+                                        </button> -->
                                         <button
                                             class="report-filter-button"
                                             type="button"
@@ -233,6 +232,16 @@
                                         </button>
                                     </div>
                                 </div>
+                            </div>
+                            <div class="apply_filter">
+                                <button
+                                    type="button"
+                                    id="apply_filter"
+                                    class="btn btn-primary"
+                                    t-on-click="onApplyClick"
+                                >
+                                    Apply
+                                </button>
                             </div>
                         </div>
                     </div>

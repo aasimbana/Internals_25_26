@@ -39,7 +39,7 @@
                                             <t t-out="filters['end_date']" />
                                         </t>
                                     </th>
-                                    <th>
+                                    <!-- <th>
                                         <t
                                             t-foreach="filters['partner']"
                                             t-as="selected_partner"
@@ -50,7 +50,7 @@
                                             />
                                             ,
                                         </t>
-                                    </th>
+                                    </th> -->
                                     <th>
                                         <t t-set="first_account" t-value="True" />
                                         <t
@@ -183,7 +183,7 @@
                                                         t-esc="total[move_line]['currency_id']"
                                                     />
                                                     <t
-                                                        t-esc="total[move_line]['total_debit'] - total[move_line]['total_credit']"
+                                                        t-esc="round(total[move_line]['total_debit'] - total[move_line]['total_credit'], 2)"
                                                     />
                                                 </span>
                                             </strong>
@@ -286,7 +286,7 @@
                                 <th style="width:10%">
                                     <t t-out="grand_total['currency']" />
                                     <t
-                                        t-out="float(grand_total['total_debit']) - float(grand_total['total_credit'])"
+                                        t-out="round(float(grand_total['total_debit']) - float(grand_total['total_credit']),2)"
                                     />
                                 </th>
                             </tr>
