@@ -82,6 +82,23 @@ class BankBookReport(models.TransientModel):
         return data
 
     @api.model
+    def view_report_bank(self):
+        """
+        Retrieves bank accounts for the bank book report.
+        Returns a dictionary with accounts list.
+        """
+        data = {}
+        journals = self.env["account.journal"].search([("type", "=", "bank")])
+        account_move_lines = self.env["account.move.line"].search(
+            [("parent_state", "=", "posted"), ("journal_id", "in", journals.ids)]
+        )
+        accounts = account_move_lines.mapped("account_id").read(
+            ["display_name", "name"]
+        )
+        data["accounts"] = accounts
+        return data
+        
+    @api.model
     def get_filter_values(self, partner_id, data_range, account_list, options):
         """
         Retrieve filtered data for the partner ledger report.
@@ -278,7 +295,7 @@ class BankBookReport(models.TransientModel):
         col = 0
         sheet.write("A1:b1", report_name, head)
         sheet.write("B3:b4", "Date Range", filter_head)
-        sheet.write("B4:b4", "Partners", filter_head)
+        #sheet.write("B4:b4", "Partners", filter_head)
         sheet.write("B5:b4", "Accounts", filter_head)
         sheet.write("B6:b4", "Options", filter_head)
         if start_date or end_date:
